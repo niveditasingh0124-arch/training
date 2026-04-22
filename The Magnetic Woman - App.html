@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Magnetic Woman</title>
+<style>
+  :root {
+    --blue: #1F5C99;
+    --blue-light: #EBF2FA;
+    --blue-mid: #3A7FC1;
+    --gold: #B8860B;
+    --gold-light: #FDF6E3;
+    --green: #2E7D32;
+    --green-light: #E8F5E9;
+    --bg: #F4F6F9;
+    --card: #FFFFFF;
+    --text: #1A2533;
+    --muted: #6B7A8D;
+    --border: #DDE3EB;
+    --retreat: #5C3D8F;
+    --retreat-light: #F3EEF9;
+    --top-h: 58px;
+    --bot-h: 64px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { height: -webkit-fill-available; }
+  html, body { height: 100%; overflow: hidden; font-family: 'Georgia', serif; background: var(--bg); color: var(--text); }
+
+  /* ── APP SHELL ─────────────────────────────────── */
+  #app { display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; height: 100dvh; }
+
+  /* TOP BAR */
+  #top-bar {
+    flex-shrink: 0; height: var(--top-h);
+    background: var(--blue); color: white;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 20px; text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+    padding-top: env(safe-area-inset-top, 0);
+  }
+  #top-title { font-size: 17px; font-weight: bold; letter-spacing: 0.2px; display: block; }
+  #top-sub { font-size: 10.5px; opacity: 0.65; font-family: Arial, sans-serif; font-style: italic; display: block; margin-top: 2px; }
+
+  /* SCREENS */
+  #screens { flex: 1; overflow: hidden; position: relative; }
+  .tab-screen {
+    position: absolute; inset: 0;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    display: none;
+    padding-bottom: calc(var(--bot-h) + 20px);
+  }
+  .tab-screen.active { display: block; }
+
+  /* BOTTOM NAV */
+  #bottom-nav {
+    flex-shrink: 0; height: var(--bot-h);
+    background: var(--card); border-top: 1px solid var(--border);
+    display: flex; align-items: stretch;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.07);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .nav-tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; border: none; background: none; cursor: pointer;
+    color: var(--muted); font-family: Arial, sans-serif; font-size: 10px;
+    padding: 6px 2px; transition: color 0.15s;
+  }
+  .nav-tab .ni { font-size: 19px; line-height: 1; transition: transform 0.15s; }
+  .nav-tab.active { color: var(--blue); }
+  .nav-tab.active .ni { transform: translateY(-2px); }
+
+  /* ── SHARED CONTENT STYLES ─────────────────────── */
+  .section { padding: 20px 16px; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+  .s-tag { font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--blue); font-family: Arial, sans-serif; font-weight: bold; margin-bottom: 4px; }
+  .s-title { font-size: 21px; color: var(--blue); line-height: 1.25; margin-bottom: 3px; }
+  .s-sub { font-size: 12.5px; color: var(--muted); font-family: Arial, sans-serif; font-style: italic; margin-bottom: 16px; }
+  .s-div { height: 2px; background: linear-gradient(to right, var(--blue), transparent); width: 44px; margin-bottom: 16px; }
+
+  .callout { background: var(--blue-light); border-left: 4px solid var(--blue); border-radius: 0 8px 8px 0; padding: 13px 15px; margin: 12px 0; }
+  .callout p { font-size: 13.5px; line-height: 1.75; color: var(--text); font-style: italic; }
+
+  .hero-card { background: linear-gradient(135deg, var(--blue), #2E86C1); color: white; border-radius: 14px; padding: 22px 18px; margin-bottom: 18px; }
+  .hero-card h2 { font-size: 17px; margin-bottom: 8px; line-height: 1.4; }
+  .hero-card p { font-size: 13px; line-height: 1.75; opacity: 0.9; }
+
+  .chip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .chip { background: var(--card); border-radius: 8px; padding: 10px 10px; border: 1px solid var(--border); font-size: 11.5px; font-family: Arial, sans-serif; color: var(--blue); text-align: center; font-weight: bold; }
+
+  /* quality cards */
+  .q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .q-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px 14px; border-left: 4px solid var(--blue); }
+  .q-card h3 { font-size: 12.5px; color: var(--blue); margin-bottom: 4px; }
+  .q-card p { font-size: 12px; line-height: 1.6; color: #3A4A5C; }
+
+  /* practice lists */
+  .practice-card { background: var(--card); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; overflow: hidden; }
+  .practice-card-hd { background: var(--blue-light); padding: 11px 15px; font-size: 12.5px; font-weight: bold; color: var(--blue); font-family: Arial, sans-serif; }
+  .p-list { list-style: none; padding: 0; }
+  .p-list li { padding: 9px 14px; border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.65; display: flex; gap: 8px; }
+  .p-list li:last-child { border-bottom: none; }
+  .p-list li::before { content: "•"; color: var(--blue); font-weight: bold; flex-shrink: 0; margin-top: 2px; }
+
+  /* time blocks */
+  .t-section-hd { background: var(--blue); color: white; padding: 8px 14px; border-radius: 8px; margin: 14px 0 8px; font-family: Arial, sans-serif; font-size: 12px; font-weight: bold; }
+  .t-block { background: var(--card); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border); overflow: hidden; }
+  .t-block-hd { background: var(--blue-light); padding: 9px 13px; border-bottom: 1px solid var(--border); }
+  .t-label { font-size: 10.5px; color: var(--blue); font-family: Arial, sans-serif; font-weight: bold; }
+  .t-name { font-size: 13.5px; font-weight: bold; color: var(--text); }
+  .t-body { padding: 12px 14px; }
+  .t-body p { font-size: 12.5px; line-height: 1.75; margin-bottom: 8px; color: #3A4A5C; }
+  .t-body p:last-child { margin-bottom: 0; }
+  .new-badge { display: inline-block; background: var(--blue); color: white; font-size: 8.5px; padding: 1px 6px; border-radius: 10px; font-family: Arial, sans-serif; margin-right: 4px; vertical-align: middle; font-weight: bold; text-transform: uppercase; }
+
+  /* day cards */
+  .day-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .day-card { background: var(--card); border-radius: 10px; padding: 13px 13px; border: 1px solid var(--border); border-top: 3px solid var(--blue); }
+  .day-card h3 { font-size: 11px; color: var(--blue); margin-bottom: 4px; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: 0.4px; }
+  .day-card p { font-size: 12px; line-height: 1.6; color: #3A4A5C; }
+
+  /* PD accordion */
+  .pd-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; border-left: 4px solid var(--gold); }
+  .pd-hd { padding: 13px 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: var(--gold-light); user-select: none; }
+  .pd-hd-title { font-size: 13.5px; font-weight: bold; color: #6B4C00; display: flex; align-items: center; gap: 9px; flex: 1; }
+  .pd-num { background: var(--gold); color: white; width: 23px; height: 23px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-family: Arial, sans-serif; font-weight: bold; flex-shrink: 0; }
+  .pd-arr { font-size: 14px; color: var(--gold); transition: transform 0.22s; flex-shrink: 0; }
+  .pd-arr.open { transform: rotate(180deg); }
+  .pd-body { padding: 15px 16px; display: none; background: white; }
+  .pd-body.open { display: block; }
+  .pd-body p { font-size: 13px; line-height: 1.8; margin-bottom: 10px; color: #2C3E50; }
+  .pd-body p:last-child { margin-bottom: 0; }
+  .pd-body strong { color: var(--gold); }
+
+  /* emotions / questions */
+  .em-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 12px; }
+  .em-card { background: var(--card); border-radius: 10px; padding: 13px; border: 1px solid var(--border); border-top: 3px solid var(--gold); }
+  .em-card h4 { font-size: 12.5px; color: var(--gold); margin-bottom: 4px; font-family: Arial, sans-serif; }
+  .em-card p { font-size: 12px; line-height: 1.6; color: #3A4A5C; }
+  .q-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 12px; }
+  .q-card2 { background: var(--gold-light); border-radius: 10px; padding: 15px 12px; text-align: center; border: 1px solid #E8D5A0; }
+  .q-card2 .qt { font-size: 19px; color: var(--gold); font-weight: bold; margin-bottom: 6px; }
+  .q-card2 p { font-size: 11px; color: #6B4C00; line-height: 1.6; font-family: Arial, sans-serif; }
+
+  /* disease cards */
+  .dis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .dis-card { background: var(--card); border-radius: 10px; padding: 12px; border: 1px solid var(--border); border-top: 3px solid #C0392B; }
+  .dis-card h4 { font-size: 12px; color: #C0392B; margin-bottom: 4px; font-family: Arial, sans-serif; font-weight: bold; }
+  .dis-card p { font-size: 11.5px; line-height: 1.55; color: #3A4A5C; }
+  .dis-cure { font-size: 11px; color: var(--green); margin-top: 4px; font-style: italic; }
+
+  /* retreat */
+  .retreat-wrap { background: var(--retreat-light); border: 1px solid #D0B8E8; border-radius: 12px; overflow: hidden; }
+  .retreat-hd { background: var(--retreat); color: white; padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .retreat-hd h3 { font-size: 14px; display: flex; align-items: center; gap: 9px; flex-wrap: wrap; flex: 1; }
+  .r-badge { font-size: 9px; background: rgba(255,255,255,0.2); padding: 2px 7px; border-radius: 10px; font-family: Arial, sans-serif; letter-spacing: 0.5px; text-transform: uppercase; }
+  .r-arr { font-size: 17px; transition: transform 0.22s; flex-shrink: 0; }
+  .r-arr.open { transform: rotate(180deg); }
+  .retreat-body { display: none; padding: 14px; }
+  .retreat-body.open { display: block; }
+  .r-day { background: white; border-radius: 10px; margin-bottom: 9px; border: 1px solid #D0B8E8; overflow: hidden; }
+  .r-day-hd { background: var(--retreat); color: white; padding: 9px 14px; font-size: 12px; font-weight: bold; font-family: Arial, sans-serif; }
+  .r-day-body { padding: 12px 14px; }
+  .r-day-body p { font-size: 12.5px; line-height: 1.75; margin-bottom: 6px; color: #3A4A5C; }
+  .r-day-body p:last-child { margin-bottom: 0; }
+  .r-day-body em { color: var(--retreat); font-style: italic; }
+  .r-info { background: white; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; border: 1px solid #D0B8E8; font-size: 13px; line-height: 1.7; color: #3A4A5C; }
+  .r-info strong { color: var(--retreat); }
+
+  /* ── TRACK TAB ─────────────────────────────────── */
+  .track-hero {
+    background: linear-gradient(160deg, var(--blue) 0%, #2E86C1 100%);
+    padding: 24px 20px 28px; text-align: center; color: white;
+  }
+  .track-hero h2 { font-size: 15px; opacity: 0.85; font-family: Arial, sans-serif; margin-bottom: 4px; }
+  .track-date { font-size: 13px; opacity: 0.7; font-family: Arial, sans-serif; font-style: italic; margin-bottom: 16px; }
+  .ring-outer { position: relative; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .ring-svg { transform: rotate(-90deg); display: block; }
+  .ring-bg { stroke: rgba(255,255,255,0.2); fill: none; }
+  .ring-fill { stroke: #4CAF50; fill: none; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
+  .ring-inner { position: absolute; text-align: center; }
+  .ring-pct { font-size: 30px; font-weight: bold; font-family: Arial, sans-serif; line-height: 1; }
+  .ring-lbl { font-size: 10px; opacity: 0.75; font-family: Arial, sans-serif; margin-top: 2px; }
+  .track-msg { font-size: 12px; opacity: 0.7; font-family: Arial, sans-serif; font-style: italic; }
+
+  .tier-block { background: var(--card); border-radius: 12px; margin: 12px 14px 0; border: 1px solid var(--border); overflow: hidden; }
+  .tier-hd { padding: 11px 15px; font-family: Arial, sans-serif; font-size: 12px; font-weight: bold; letter-spacing: 0.2px; }
+  .tier-hd.t1 { background: var(--blue); color: white; }
+  .tier-hd.t2 { background: var(--blue-light); color: var(--blue); }
+  .tier-hd.tw { background: var(--gold-light); color: #6B4C00; }
+  .tier-hd.tm { background: var(--green-light); color: var(--green); }
+  .tier-body { padding: 4px 0; }
+  .h-item { display: flex; align-items: center; gap: 12px; padding: 11px 15px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .h-item:last-child { border-bottom: none; }
+  .h-item:active { background: #f7f9fc; }
+  .h-item input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--blue); cursor: pointer; flex-shrink: 0; }
+  .h-item label { font-size: 13.5px; line-height: 1.45; cursor: pointer; flex: 1; }
+  .h-item input:checked + label { text-decoration: line-through; color: var(--muted); }
+  #reset-btn { display: block; margin: 14px; width: calc(100% - 28px); padding: 13px; border: 1px solid var(--border); background: white; border-radius: 12px; font-family: Arial, sans-serif; font-size: 13px; color: var(--muted); cursor: pointer; letter-spacing: 0.2px; }
+  #reset-btn:active { background: #f0f0f0; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <header id="top-bar">
+    <div>
+      <span id="top-title">The Magnetic Woman</span>
+      <span id="top-sub">Overview &amp; Qualities</span>
+    </div>
+  </header>
+
+  <!-- SCREENS -->
+  <div id="screens">
+
+    <!-- ══ HOME TAB ══════════════════════════════════ -->
+    <div class="tab-screen active" id="tab-home">
+
+      <section class="section" id="home">
+        <div class="s-tag">Your Plan</div>
+        <h2 class="s-title">The Magnetic Woman</h2>
+        <p class="s-sub">A self-care & sovereignty plan built on your existing rhythm.</p>
+        <div class="s-div"></div>
+        <div class="hero-card">
+          <h2>Architect of Designup. Future Forbes 30 Under 30.</h2>
+          <p>This plan is built on top of the rhythm you already live. Nothing here asks you to abandon what is working. You are already doing eighty percent. This is the other twenty.</p>
+        </div>
+        <p style="font-size:13.5px;line-height:1.8;margin-bottom:16px;color:var(--muted);font-style:italic;">"Success is something you attract, not something you pursue. You attract it by working on yourself." — Jim Rohn</p>
+        <div class="s-tag" style="margin-bottom:10px;">The Seven Principles of This Plan</div>
+        <div class="chip-grid">
+          <div class="chip">Honor what is working</div>
+          <div class="chip">Precise definitions</div>
+          <div class="chip">Cultural authenticity</div>
+          <div class="chip">Body-first practice</div>
+          <div class="chip">70% compliance</div>
+          <div class="chip">Entrepreneurship &amp; femininity united</div>
+        </div>
+      </section>
+
+      <section class="section" id="qualities">
+        <div class="s-tag">Part I</div>
+        <h2 class="s-title">The Ten Qualities</h2>
+        <p class="s-sub">Precise definitions produce a precise woman.</p>
+        <div class="s-div"></div>
+        <div class="q-grid">
+          <div class="q-card"><h3>Elegance</h3><p>Restraint. The refusal to over-explain, over-decorate, over-give. Choosing the one perfect gesture over many frantic ones.</p></div>
+          <div class="q-card"><h3>Grace</h3><p>How you move through friction. Not the absence of problems — the quality of your response to them. Pausing, feeling, responding from your center.</p></div>
+          <div class="q-card"><h3>Intelligence</h3><p>The willingness to be wrong, to update, to think slowly when the world demands a fast answer. Depth over cleverness.</p></div>
+          <div class="q-card"><h3>Authenticity</h3><p>Congruence between what you feel, what you say, and what you do. The willingness to disappoint others rather than betray yourself.</p></div>
+          <div class="q-card"><h3>Calm</h3><p>Nervous system regulation. The felt sense of safety in your body regardless of external chaos. Calm is trained, not inherited.</p></div>
+          <div class="q-card"><h3>Confidence</h3><p>The quiet knowing that even if this specific thing fails, you will meet the next moment. Certainty of self, not outcome.</p></div>
+          <div class="q-card"><h3>Sovereignty</h3><p>Being the final authority on your life. Your body, your time, your money, your yes, your no. Nothing and no one overrides you.</p></div>
+          <div class="q-card"><h3>Discernment</h3><p>Seeing clearly what is in front of you — and acting on what you see, not what you wish were true.</p></div>
+          <div class="q-card"><h3>Magnetism</h3><p>The gravitational pull of a woman fully in her own life. You do not chase; you become someone worth being chosen by.</p></div>
+          <div class="q-card"><h3>High-Value Feminine</h3><p>The capacity to receive, rest, trust, feel, create, and soften — without losing your edge. The fuel beneath ambition, not the opposite of it.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="working">
+        <div class="s-tag">Part II</div>
+        <h2 class="s-title">What Is Already Working</h2>
+        <p class="s-sub">Before we add, we name what is already right.</p>
+        <div class="s-div"></div>
+        <div class="callout"><p>"Your morning is genuinely excellent. Keep all of this. What follows does not replace it — it deepens it."</p></div>
+        <div class="practice-card">
+          <div class="practice-card-hd">Your Existing Practices — All of These Stay</div>
+          <ul class="p-list">
+            <li>Chia and saunf-methi water — cellular hydration and digestive priming</li>
+            <li>Face icing — lowers cortisol and tightens lymph</li>
+            <li>Ujjayi and bhastrika pranayam — moves pranic energy, clears the nadis</li>
+            <li>Om chanting — entrains the vagus nerve</li>
+            <li>Self-talk affirmation — a precise, written-for-you manifestation script</li>
+            <li>Gym lifting heavy — builds muscle and psychological resilience</li>
+            <li>Daily hip openers and splits work (pigeon, low lunges, half split, side splits, plough, shoulder stand)</li>
+            <li>Mirror admiration, half or fully unclothed — a foundational feminine practice most women never learn</li>
+            <li>Pooja and Durga Chalisa — grounded in a lineage larger than yourself</li>
+            <li>Protein and amla juice — purposeful fuel</li>
+            <li>Green tea in the evening — ritual and antioxidant</li>
+            <li>Skincare — consistent and intentional</li>
+          </ul>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ══ ROUTINE TAB ════════════════════════════════ -->
+    <div class="tab-screen" id="tab-routine">
+
+      <section class="section" id="daily">
+        <div class="s-tag">Part III</div>
+        <h2 class="s-title">The Daily Magnetic Routine</h2>
+        <p class="s-sub">NEW additions are marked. Times are approximate.</p>
+        <div class="s-div"></div>
+
+        <div class="t-section-hd">🌅 Morning — The Sovereign Rise (5:30–9:30 AM)</div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">5:30 – 6:00 AM</div><div class="t-name">The Threshold</div></div><div class="t-body"><p>Wake without your phone. Keep it in another room until after pooja. The first thirty minutes of consciousness program the day.</p><p>Drink your chia and saunf-methi water. Use the washroom. This remains unchanged.</p><p><span class="new-badge">NEW</span><strong>Tongue scraping</strong> — one minute with a copper scraper before face icing. Clears ama, sharpens taste, smell, and intuition.</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">6:00 – 6:30 AM</div><div class="t-name">The Inner Temple</div></div><div class="t-body"><p>Face icing. Ujjayi and bhastrika. Om chanting three times. Self-talk affirmation.</p><p><span class="new-badge">NEW</span><strong>Embodiment pause — 2 to 3 minutes</strong> after affirmations. Close your eyes. Feel the words as if they have already happened. Feel the Rs 5 lakhs in your account. Feel your name spoken at Forbes. Two to three minutes is the minimum for a real nervous system shift.</p><p><span class="new-badge">NEW</span><strong>Five gratitudes, written.</strong> Keep a small, beautiful notebook only for this. Specific gratitudes, not vague ones. Specificity trains discernment.</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">6:30 – 8:00 AM</div><div class="t-name">The Body Temple</div></div><div class="t-body"><p>Gym. Lift heavy. Stretch well. This remains.</p><p><span class="new-badge">NEW</span>Within this session, spend at least 5 minutes moving through your range slowly with breath — feeling each degree of opening, not just pushing to the endpoint. Moving slowly through the range is where embodiment develops.</p><p><span class="new-badge">NEW</span><strong>Three-minute walking cooldown outside</strong> after gym, ideally barefoot on grass or earth for one minute. Morning sunlight before 9 AM sets your circadian rhythm and regulates melatonin.</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">8:00 – 8:30 AM</div><div class="t-name">The Mirror &amp; The Goddess</div></div><div class="t-body"><p>Admire yourself in the mirror, half or fully unclothed, as you already do. Sacred work.</p><p><span class="new-badge">NEW</span><strong>Heart-womb practice</strong> — while admiring, place one hand on your heart and one on your womb. Speak three sentences aloud: "I am safe in this body. I am worthy of all I desire. I am the one I have been waiting for."</p><p><span class="new-badge">NEW</span><strong>Slow movement in front of the mirror</strong> — not just standing and gazing. Turn, stretch, walk toward it and away. You are learning how you actually look when you are fully inside your own body.</p><p>Shower. Pooja with Durga Chalisa. This remains.</p><p><span class="new-badge">NEW</span>After pooja, <strong>light one stick of sandalwood or loban</strong>. Let the space you prayed in be scented. You are training your subconscious that this space, this morning, this woman, is divine.</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">8:30 – 9:30 AM</div><div class="t-name">Fuel and Begin</div></div><div class="t-body"><p>Protein and amla juice. Begin work.</p></div></div>
+
+        <div class="t-section-hd">☀️ Midday — The Sovereign Focus (9:30 AM–1:30 PM)</div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">9:30 AM – 1:30 PM</div><div class="t-name">Deep Work</div></div><div class="t-body"><p><span class="new-badge">NEW</span><strong>90-minute blocks with 5-minute standing break between each.</strong> No scrolling during breaks. Walk to a window. Look at something 20 feet away for 20 seconds.</p><p><span class="new-badge">NEW</span><strong>One candle or small diya lit on your workspace.</strong> It makes Designup a practice, not just a task.</p></div></div>
+
+        <div class="t-section-hd">🌿 Lunch — The Honoring Pause (1:30–2:30 PM)</div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">1:30 – 2:30 PM</div><div class="t-name">Screen-Free Lunch</div></div><div class="t-body"><p><span class="new-badge">NEW</span><strong>Eat without any screen.</strong> No laptop, no phone, no YouTube. If silence is uncomfortable, play one album of classical Indian music — Hindustani vocal, santoor, or bansuri. No lyrics, no podcasts.</p><p><span class="new-badge">NEW</span><strong>Vamakukshi</strong> — ten minutes lying flat on your left side after lunch. Aids digestion, shifts you from sympathetic to parasympathetic. Magnetic women digest. Frazzled women do not.</p></div></div>
+
+        <div class="t-section-hd">🎵 Afternoon — The Creative Return (2:30–6:30 PM)</div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">2:30 – 6:30 PM</div><div class="t-name">Work + Embodiment</div></div><div class="t-body"><p>Continue Designup work.</p><p><span class="new-badge">NEW</span>Green tea with <strong>one small square of dark chocolate (70%+)</strong>. Pleasure as daily practice, not consumption.</p><p><span class="new-badge">NEW</span><strong>Step outside for 5 minutes between 3 and 5 PM.</strong> Even to your balcony. Air on skin. Not optional for someone who works alone.</p><p><span class="new-badge">NEW</span><strong>Five minutes of slow movement to music.</strong> Deep, slow rhythm — Indian classical or devotional. Feel where the music wants the body to go and follow it. Slower than feels natural. This is embodiment practice, not exercise.</p><p><span class="new-badge">NEW</span><strong>Solo-Founder Protocol:</strong> Twice weekly — a call or voice note with a founder peer. Once weekly — a "thinking date" with your flatmate or friend to verbally talk through one Designup decision. Join one founder community post-retreat.</p></div></div>
+
+        <div class="t-section-hd">🌙 Evening — The Softening (6:30–10:00 PM)</div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">6:30 – 10:00 PM</div><div class="t-name">The Softening</div></div><div class="t-body"><p>Dinner.</p><p><span class="new-badge">NEW</span><strong>Dim all lights by 8 PM.</strong> Use lamps, candles, warm bulbs. Bright white light at night tells your body it is still daytime.</p><p><span class="new-badge">NEW</span><strong>No screens one hour before sleep.</strong> Replace with: poetry (Mirabai, Kamala Das, Rumi), intentional listening with notebook open, journaling, or stretching. If listening, sit upright, notebook open, pause when something lands and write one line.</p><p><span class="new-badge">NEW</span><strong>Evening brain dump</strong> — five minutes, write every open loop on paper. Tomorrow's tasks, worries, half-formed ideas. Your brain can stop running loops once they are safely captured.</p><p>Skincare. Brush teeth. Positive self-talk. This remains.</p><p><span class="new-badge">NEW</span><strong>End-of-day gratitude spoken aloud in bed.</strong> Three things that went right today. Morning gratitude is for vision; evening is for appreciation.</p></div></div>
+      </section>
+
+      <section class="section" id="weekly">
+        <div class="s-tag">Part IV</div>
+        <h2 class="s-title">The Weekly Rhythm</h2>
+        <p class="s-sub">Each day carries a subtle theme — a gentle architecture, not a rigid rule.</p>
+        <div class="s-div"></div>
+        <div class="day-grid">
+          <div class="day-card"><h3>Monday</h3><p>Strategy. Deep work, planning, execution. Wear your most grounded color — charcoal, navy, deep forest.</p></div>
+          <div class="day-card"><h3>Tuesday</h3><p>Fire. Gym harder. Ship something. Take one action that scares you slightly. Mars energy — the warrior.</p></div>
+          <div class="day-card"><h3>Wednesday</h3><p>Craft. Protect for your sharpest mind work. Resume artwork practice next month on Wednesdays.</p></div>
+          <div class="day-card"><h3>Thursday</h3><p>Communication. Calls, outreach, pitches, emails. Wear gold. Speak.</p></div>
+          <div class="day-card"><h3>Friday</h3><p>Pleasure. Facial, abhyanga, long bath, beautiful meal. Venus energy — Friday is receiving.</p></div>
+          <div class="day-card"><h3>Saturday</h3><p>Integration. Lighter work, longer gym, a walk, a coffee somewhere beautiful. Half work, half rest.</p></div>
+          <div class="day-card" style="grid-column:1/-1;border-top-color:var(--gold);"><h3>Sunday</h3><p>The Reset. The most important day of the week for the week ahead. See Part V for the full architecture.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="sunday">
+        <div class="s-tag">Part V</div>
+        <h2 class="s-title">The Sunday Magnetism Reset</h2>
+        <p class="s-sub">Sunday is not for emptying email. It is the day you attend to yourself with the same quality of attention you give your business.</p>
+        <div class="s-div"></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">6:30 – 9:00 AM</div><div class="t-name">A Slower Morning Ritual</div></div><div class="t-body"><p>Full morning routine but slower. Sip chia water for 15 minutes. Extend pranayam to 15 minutes. Add a 10-minute seated meditation after affirmations — just breath, no agenda.</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">9:00 – 10:30 AM</div><div class="t-name">The Body Temple Hour</div></div><div class="t-body"><p>Pick one each week, rotating: <strong>Abhyanga oil massage</strong> (warm sesame or almond oil, 15–20 minutes, warm shower) · <strong>Luxury bath</strong> (Epsom salts, rose petals, essential oil, 45 minutes) · <strong>Hair ritual</strong> (coconut or bhringraj oil, 30 minutes, 100 brush strokes) · <strong>Face ritual</strong> (ubtan exfoliation, face mask, gua sha or kansa wand).</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">10:30 – 11:30 AM</div><div class="t-name">Slow Fuel</div></div><div class="t-body"><p>A beautiful breakfast, plated as if serving a guest. Eat at a table. Flowers if possible — even two stems in a glass.</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">11:30 AM – 1:00 PM</div><div class="t-name">Clear the Temple</div></div><div class="t-body"><p>One area of the home each week: wardrobe, desk, kitchen, bathroom, bedroom. Discard three things. Wear something beautiful — kaftan, saree, flowing dress. You are the guest of honour in your own life.</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">1:00 – 2:30 PM</div><div class="t-name">Light Lunch and Rest</div></div><div class="t-body"><p>Khichdi, salad, or dal and rice. Then lie down for 20–30 minutes. Rest on Sunday is the engineering of the week ahead.</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">2:30 – 5:00 PM</div><div class="t-name">The Soul Hour</div></div><div class="t-body"><p>Choose what your soul actually needs. Options: journaling · intentional listening with notebook · sketching or painting · one coffee with a person who fills you up · a walk with feet on earth for 10 minutes.</p><div style="margin-top:10px;padding:11px 13px;background:var(--blue-light);border-radius:8px;font-style:italic;font-size:12.5px;color:var(--blue);line-height:1.75;">Sunday Prompts (rotate): What is my body asking for that I have been ignoring? · Who am I becoming — describe her in detail. · What needs to leave my life to make room for what I am calling in? · What does Designup actually need from me right now? · Where in my life am I performing instead of being? · If I fully trusted that I am God's favourite child, what would I do differently this week?</div></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">5:00 – 6:00 PM</div><div class="t-name">The Week Review</div></div><div class="t-body"><p>30 minutes with notebook and tea. Four questions: What happened this week that I want to remember? Where did I abandon myself, even slightly? What am I proud of? What one thing will make next week feel more aligned? This is a life review. You are the project.</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">6:00 – 7:30 PM</div><div class="t-name">Prepare for the Week</div></div><div class="t-body"><p>Lay out Monday's outfit. Plan Monday's meals. Look at your calendar. Close the laptop by 7:30.</p></div></div>
+        <div class="t-block"><div class="t-block-hd"><div class="t-label">9:00 PM</div><div class="t-name">Sleep</div></div><div class="t-body"><p>Yes, early. A magnetic Monday begins on Sunday night.</p></div></div>
+      </section>
+
+    </div>
+
+    <!-- ══ BODY TAB ═══════════════════════════════════ -->
+    <div class="tab-screen" id="tab-body">
+
+      <section class="section" id="nutrition">
+        <div class="s-tag">Part VI</div>
+        <h2 class="s-title">Nutrition, Beauty &amp; Energy</h2>
+        <p class="s-sub">These are not daily. They are a menu. Pick what calls you.</p>
+        <div class="s-div"></div>
+        <div class="practice-card">
+          <div class="practice-card-hd">Nutrition for Magnetism</div>
+          <ul class="p-list">
+            <li>Warm water between meals only — stop 20–30 min before a meal, wait 30–45 min after. Never cold water with food.</li>
+            <li>Ghee daily — one teaspoon. Non-negotiable for feminine vitality in Ayurvedic terms.</li>
+            <li>Soaked almonds — five, overnight, peeled. Brain, skin, hormones.</li>
+            <li>One portion of something red every day — beetroot, pomegranate, red apple, watermelon. Iron, blood, glow.</li>
+            <li>Avoid: packaged snacks, seed oils, excess caffeine after 2 PM, eating after 8 PM.</li>
+          </ul>
+        </div>
+        <div class="practice-card">
+          <div class="practice-card-hd">Beauty as Ritual</div>
+          <ul class="p-list">
+            <li><strong>Nightly face mask</strong> — multani mitti, rice flour, red sandalwood, white sandalwood, liquorice, chickpea flour, dry rose petal powder. Mix with rose water. 10–15 minutes, rinse cool. 5 times/week if skin tends to dryness.</li>
+            <li><strong>Ubtan for the body</strong> 2–3 times/week — oil first (abhyanga), then ubtan. Add pinch of turmeric. Apply damp on damp skin, sit 5 minutes, rub off in circles.</li>
+            <li>Scent: two drops rose or sandalwood essential oil in morning body oil. When going out — Indian attar on wrists and behind ears. No synthetic perfume.</li>
+            <li>Posture — stand against a wall 2 minutes daily: heels, buttocks, shoulder blades, head touching. A woman with an open chest is a magnetic woman.</li>
+            <li>Weekly oil hair massage, weekly ubtan or exfoliation, fortnightly longer face ritual, monthly professional facial.</li>
+          </ul>
+        </div>
+        <div class="practice-card">
+          <div class="practice-card-hd">Energetic Hygiene</div>
+          <ul class="p-list">
+            <li>Once a week — cleanse your space with loban, sandalwood, or open all windows for 30 minutes.</li>
+            <li><strong>Shakti transmutation practice</strong> — when energy activates during the day, three slow ujjayi breaths drawing it upward from belly to chest to crown. Not suppression — transmutation. This energy, channelled into Designup, makes your work carry a quality most people cannot manufacture.</li>
+            <li>Mirror practice daily — already yours. Keep it sacred.</li>
+            <li>Crystal if drawn — rose quartz for softness, black tourmaline for protection, citrine for wealth. Optional, works only if you believe.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" id="retreat">
+        <div class="s-tag">Part VII — One-Time Activity</div>
+        <h2 class="s-title">The Five-Day Silence Retreat</h2>
+        <p class="s-sub">April 28 – May 2, 2026 · A returning practice, not a first.</p>
+        <div class="s-div"></div>
+        <p style="font-size:13px;line-height:1.8;color:var(--muted);margin-bottom:14px;">This is a one-time, deeply specific activity. It sits separately from your daily and weekly practices.</p>
+        <div class="retreat-wrap">
+          <div class="retreat-hd" onclick="toggleRetreat(this)">
+            <h3>Full Retreat Plan <span class="r-badge">One-Time · Apr 28–May 2</span></h3>
+            <span class="r-arr">▾</span>
+          </div>
+          <div class="retreat-body">
+            <div class="r-info"><strong>Pre-Retreat (April 25–27)</strong><br><br><strong>April 25 (Sat):</strong> Clear email inbox. Notify people you are unreachable Apr 28–May 2. Do this before you leave home.<br><br><strong>April 26 (Sun):</strong> Travel to Hyderabad. On arrival, stock kitchen: khichdi, ghee, fruits, nuts, herbal teas, one special dessert (kheer). Lay out clothes for each day — loose, white or cream.<br><br><strong>April 27 (Mon eve):</strong> Clean space thoroughly. Phone off at 9 PM. Write letter to yourself: what do I want to be clear on by May 1? Seal it. Sleep by 10 PM.</div>
+            <div class="r-info"><strong style="color:var(--retreat);">Guiding Principles</strong><br><br>Silence = no speaking, no phone, no internet, no media beyond devotional music. No gym — walks and yoga only. Eat simply. Do not force insight. Expect physical restlessness Days 1–2 from not lifting — this is normal and passes by Day 3.</div>
+            <div class="r-day"><div class="r-day-hd">Day 1 — April 28 (Tue): Entry · Arriving</div><div class="r-day-body"><p>6:00 AM — Full morning ritual, slowed. Pranayam 20 minutes.</p><p>9:00 AM — Pooja. Declare aloud once: "I am entering five days of silence to listen." Silence begins.</p><p>10:00 AM–12:00 PM — Writing: <em>What has been the last six months — what did I carry, what did I bury, what did I learn?</em></p><p>3:00–5:00 PM — One spiritual text. Read or listen with notebook open — active only.</p><p>7:30–9:00 PM — Journaling: <em>What does my body feel like right now? What is louder that the outside world is quiet?</em></p><p>Expect restlessness. Day one is detox.</p></div></div>
+            <div class="r-day"><div class="r-day-hd">Day 2 — April 29 (Wed): The Unraveling</div><div class="r-day-body"><p>Day two is typically the hardest. Emotions come up. Do not run. This is the point.</p><p>7:30 AM — 45-minute seated meditation. Watch breath. When thoughts arise, return.</p><p>10:30 AM–1:00 PM — Soul Inventory: <em>Who have I been in the last year? Who am I becoming? What is draining my magnetism? What is feeding it?</em></p><p>4:00–5:30 PM — Yoga, slowly. Focus on hips and heart. If tears come today, let them.</p></div></div>
+            <div class="r-day"><div class="r-day-hd">Day 3 — April 30 (Thu): The Body Knows</div><div class="r-day-body"><p>Mental noise has settled. Today is not for thinking. It is for listening.</p><p>10:30 AM–12:30 PM — Body Inquiry: <em>Where do I hold tension chronically? What has my body been asking for? If my womb could speak today, what would she say?</em></p><p>3:30–5:00 PM — Yoga: malasana, pigeon, butterfly, camel, bridge. Do not perform. Melt.</p><p>9:00 PM prompt: <em>What am I ready to release?</em></p></div></div>
+            <div class="r-day"><div class="r-day-hd">Day 4 — May 1 (Fri): Listening to Designup</div><div class="r-day-body"><p>By Day 4 you are deeply settled. The strategic clarity that surfaces today will be different in quality from anything produced in a week of regular work.</p><p>10:00 AM–1:00 PM — The Designup Dialogue: <em>If Designup could speak, what does she need from me? Who am I building this for? What am I afraid of about this launch? What is the one truth about Designup I have been avoiding?</em></p><p>3:30–5:00 PM — The Launch Vision: <em>What do the first 90 days after launch look like in divine timing? What will I NOT do, even though the industry says I should?</em></p></div></div>
+            <div class="r-day"><div class="r-day-hd">Day 5 — May 2 (Sat): The Return</div><div class="r-day-body"><p>Today you re-enter the world with precision. Do not rush.</p><p>10:00 AM–12:30 PM — Re-read everything you wrote. Write "What I carry forward" — 15–20 sentences max. Include 3 Designup commitments, 3 personal commitments, one guiding phrase.</p><p>4:00–5:30 PM — Open the letter you wrote on April 27. Read it. Respond on paper: what has shifted?</p><p>7:30 PM — Break silence: "I return to speech with more care than I left it." Phone stays off until May 3 morning.</p></div></div>
+            <div class="r-info"><strong style="color:var(--retreat);">Post-Retreat Care (May 3–5)</strong><br><br>May 3 — full Sunday reset. May 4–5 — no big meetings, gentle walks, gym, reconnect. Let retreat settle 72 hours before acting on insights or sharing publicly. <strong>May 5 — write one sentence: the single most important thing Designup needs from you in May. Pin it somewhere visible.</strong> By May 6 — build.</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ══ GROW TAB ════════════════════════════════════ -->
+    <div class="tab-screen" id="tab-grow">
+      <section class="section" id="pd">
+        <div class="s-tag">Part IX — Jim Rohn</div>
+        <h2 class="s-title">Personal Development</h2>
+        <p class="s-sub">Structural principles for a founder building a life by design, not by drift.</p>
+        <div class="s-div"></div>
+        <div class="callout"><p>"Success is something you attract, not something you pursue. You attract it by becoming the kind of person success is looking for. Work on yourself first."</p></div>
+        <div style="height:14px;"></div>
+
+        <div class="pd-card"><div class="pd-hd" onclick="togglePD(this)"><div class="pd-hd-title"><div class="pd-num">1</div>The Core Question — What Are You Becoming?</div><div class="pd-arr">▾</div></div><div class="pd-body"><p>The major question to ask is not what you are getting. It is <strong>what you are becoming.</strong> True happiness is not contained in what you get. It is contained in what you become.</p><p>This reframes everything — every practice in this plan, every hour spent on Designup. The Rs 5 lakhs, the Forbes feature, the successful launch — those are byproducts. The goal is who you are becoming in the pursuit of them.</p><p>Success is something you attract, not something you pursue. You attract it by becoming the kind of person success is looking for. Personal development is not separate from your entrepreneurial ambition. It is the engine of it.</p></div></div>
+
+        <div class="pd-card"><div class="pd-hd" onclick="togglePD(this)"><div class="pd-hd-title"><div class="pd-num">2</div>The Three Ways to Know — Read, Listen, Observe</div><div class="pd-arr">▾</div></div><div class="pd-body"><p><strong>Read or listen actively — thirty minutes daily, no miss.</strong> You are primarily a listener. That works. The condition is non-negotiable: active engagement, notebook open, pause when something lands, write one line. Miss a meal before you miss your thirty minutes. Undernourished minds produce undernourished lives.</p><p><strong>Listen to people who are ahead of you.</strong> Get around founders, builders, thinkers who are further along and listen more than you speak. One conversation with the right person can compress years.</p><p><strong>Observe.</strong> Success leaves clues. Watch how people who have built what you want to build carry themselves, make decisions, handle setbacks. Wherever you are, be there fully. Do not miss anything.</p></div></div>
+
+        <div class="pd-card"><div class="pd-hd" onclick="togglePD(this)"><div class="pd-hd-title"><div class="pd-num">3</div>From Learning to Massive Action</div><div class="pd-arr">▾</div></div><div class="pd-body"><p>Do not let your learning lead only to knowledge. <strong>Knowledge without action produces nothing.</strong> Let your learning lead to action — and action leads to everything.</p><p>The formula: pick up a good idea, take <strong>massive</strong> action. Massive is the key word. If you are going to reach customers, reach a thousand. Write your game plan on paper. Do not operate from your head — operate from paper.</p><p>Do not try to beat the system. Find out how it works, then work it. Cutting corners produces a cut-down life. Do it right, even when it seems to take longer. Be a quick learner. Don't be stubborn.</p></div></div>
+
+        <div class="pd-card"><div class="pd-hd" onclick="togglePD(this)"><div class="pd-hd-title"><div class="pd-num">4</div>The Law of Use — Use It or Lose It</div><div class="pd-arr">▾</div></div><div class="pd-body"><p>Whatever you do not use, you lose. This is not philosophy. <strong>It is law.</strong> Ambition unused declines. Vitality unused diminishes. Faith unused decreases. Talent unused is lost.</p><p>Take a new inventory of yourself. Make sure that all of your talent, ability, mentality, ingenuity, vitality, courage, strong feelings, and faith are being used. The practices in this plan — the gym, the mirror work, the pranayam, the writing, the retreat — are all acts of use. You are keeping the instrument alive.</p><p>If you tie your arm to your body long enough, you will never use it again. The only way to keep it is to keep using it. Do not let any part of what you are capable of go unused.</p></div></div>
+
+        <div class="pd-card"><div class="pd-hd" onclick="togglePD(this)"><div class="pd-hd-title"><div class="pd-num">5</div>The Law of Sowing and Reaping</div><div class="pd-arr">▾</div></div><div class="pd-body"><p>Sow bad, reap bad. Sow good, reap good. <strong>You do not reap what you sow — you reap much more than what you sow.</strong> It works in both directions. There are many ways to sow. You could sometimes lose — that is part of this planet. And if you do not sow at all, you do not even have a chance.</p><p>The crop you have right now is the one you planted. If you do not like it, look in the mirror. Then change what you are planting.</p><p>The retreat is a sowing act. The daily practices are sowing acts. Designup's GTM launch is a sowing act. Plant well, plant massively, and trust the law.</p></div></div>
+
+        <div class="pd-card"><div class="pd-hd" onclick="togglePD(this)"><div class="pd-hd-title"><div class="pd-num">6</div>Goals — Designed, Not Drifted</div><div class="pd-arr">▾</div></div><div class="pd-body"><p>It is easy to let life deteriorate into <strong>making a living instead of designing a life.</strong> You have chosen to design. Now make that design precise.</p><p><strong>Reasons first.</strong> If you have enough reasons, you can do the most incredible things. Get a long list — personal reasons, family reasons, the feeling of being a winner, the people you want to serve through Designup, the woman you are becoming.</p><p><strong>Long-range goals:</strong> Forbes 30 Under 30. Rs 5 lakhs a month. The artist. The sovereign founder. Keep these alive. Without dreams, direction disappears.</p><p><strong>Short-range goals — three categories:</strong> economic (income, Designup growth), things (what you want to acquire and experience), personal development (who you want to become). <strong>Write them down. Work them.</strong> Your goals affect everything — how you walk into a room, how you answer a question. Set worthy goals and everything lifts.</p></div></div>
+
+        <div class="pd-card"><div class="pd-hd" onclick="togglePD(this)"><div class="pd-hd-title"><div class="pd-num">7</div>Attitude Diseases — The Ones to Watch</div><div class="pd-arr">▾</div></div><div class="pd-body"><p>These are weeds. They grow normally. The work is not to be surprised when they appear but to handle them immediately. Neglect them for a week and they cost you a year of repair.</p><div class="dis-grid" style="margin-top:12px;"><div class="dis-card"><h4>Indifference</h4><p>The shrug. No strong feeling. Creeps in during long stretches of solo building.</p><p class="dis-cure">Cure: bring everything you have to every action.</p></div><div class="dis-card"><h4>Self-Doubt</h4><p>Chronic questioning of whether you can do it. Devastates the future.</p><p class="dis-cure">Cure: become a believer — in the work, in yourself.</p></div><div class="dis-card"><h4>Worry</h4><p>Devastating. Health problems, focus problems, creative problems.</p><p class="dis-cure">Cure: evening brain dump. Give worry nowhere to live.</p></div><div class="dis-card"><h4>Over-Caution</h4><p>Waiting until it is safe. If trying is risky, wait until you get the bill for not trying.</p><p class="dis-cure">Cure: ask for adventure, not security.</p></div><div class="dis-card"><h4>Pessimism</h4><p>Always checking what is wrong. Our lives are mostly affected by the way we think things are.</p><p class="dis-cure">Cure: train the mind to look for what is right.</p></div><div class="dis-card"><h4>Complaining</h4><p>Five minutes of complaining wastes five minutes and plants seeds of worse.</p><p class="dis-cure">Cure: don't. Not for five minutes.</p></div></div></div></div>
+
+        <div class="pd-card"><div class="pd-hd" onclick="togglePD(this)"><div class="pd-hd-title"><div class="pd-num">8</div>The Four Emotions That Turn a Life Around</div><div class="pd-arr">▾</div></div><div class="pd-body"><p>These are not techniques. They are emotional states that, when they arrive genuinely, produce irreversible change.</p><div class="em-grid"><div class="em-card"><h4>Disgust</h4><p>"I have had it." May not be the day it ends, but the day it begins. You have had this day already. Remember it as evidence.</p></div><div class="em-card"><h4>Decision</h4><p>The inner civil war resolved. When you have decided, act. Easy or hard — just get it done.</p></div><div class="em-card"><h4>Desire</h4><p>Wanting it badly enough. Comes from inside, not outside. Keep the barriers down.</p></div><div class="em-card"><h4>Resolve</h4><p>"I will." Two of the most powerful words. You are your mountain and you intend to wave from the top.</p></div></div></div></div>
+
+        <div class="pd-card"><div class="pd-hd" onclick="togglePD(this)"><div class="pd-hd-title"><div class="pd-num">9</div>Four Questions to Live With</div><div class="pd-arr">▾</div></div><div class="pd-body"><div class="q-row"><div class="q-card2"><div class="qt">Why?</div><p>Why try? Why read? Why build? Why go that far? Find your reasons. They change everything.</p></div><div class="q-card2"><div class="qt">Why not?</div><p>What else are you going to do with your life? Why not see how far you can go?</p></div><div class="q-card2"><div class="qt">Why not you?</div><p>Some people have done the most incredible things with the most limited starts. Why not you?</p></div><div class="q-card2"><div class="qt">Why not now?</div><p>Do not postpone the better future. New goals. Massive action. The retreat starts in days.</p></div></div></div></div>
+
+      </section>
+    </div>
+
+    <!-- ══ TRACK TAB ══════════════════════════════════ -->
+    <div class="tab-screen" id="tab-track">
+      <div class="track-hero">
+        <h2>Today's Non-Negotiables</h2>
+        <div class="track-date" id="track-date"></div>
+        <div class="ring-outer">
+          <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="50" stroke-width="10"/>
+            <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="50" stroke-width="10"
+              stroke-dasharray="314" stroke-dashoffset="314"/>
+          </svg>
+          <div class="ring-inner">
+            <div class="ring-pct" id="ring-pct">0%</div>
+            <div class="ring-lbl" id="ring-lbl">of today done</div>
+          </div>
+        </div>
+        <div class="track-msg" id="track-msg">Start your day.</div>
+      </div>
+
+      <div class="tier-block">
+        <div class="tier-hd t1">Tier 1 — Daily Absolutes</div>
+        <div class="tier-body" id="t1-body"></div>
+      </div>
+      <div class="tier-block">
+        <div class="tier-hd t2">Tier 2 — Strong Intentions</div>
+        <div class="tier-body" id="t2-body"></div>
+      </div>
+      <div class="tier-block">
+        <div class="tier-hd tw">Weekly Non-Negotiables</div>
+        <div class="tier-body" id="tw-body"></div>
+      </div>
+      <div class="tier-block">
+        <div class="tier-hd tm">Monthly Deeper Practices</div>
+        <div class="tier-body" id="tm-body"></div>
+      </div>
+      <button id="reset-btn">Reset today's checklist</button>
+    </div>
+
+  </div><!-- /screens -->
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button class="nav-tab active" onclick="switchTab('home','Overview &amp; Qualities',this)"><span class="ni">🏠</span><span>Home</span></button>
+    <button class="nav-tab" onclick="switchTab('routine','Daily · Weekly · Sunday',this)"><span class="ni">🌅</span><span>Routine</span></button>
+    <button class="nav-tab" onclick="switchTab('body','Nutrition &amp; Beauty',this)"><span class="ni">🌿</span><span>Body</span></button>
+    <button class="nav-tab" onclick="switchTab('grow','Personal Development',this)"><span class="ni">⭐</span><span>Grow</span></button>
+    <button class="nav-tab" onclick="switchTab('track','Today\'s Habits',this)"><span class="ni">✅</span><span>Track</span></button>
+  </nav>
+
+</div>
+
+<script>
+// ── iOS VIEWPORT FIX ───────────────────────────────────
+function fixHeight() {
+  document.getElementById('app').style.height = window.innerHeight + 'px';
+}
+fixHeight();
+window.addEventListener('resize', fixHeight);
+
+// ── TAB SWITCHING ──────────────────────────────────────
+function switchTab(name, subtitle, btn) {
+  document.querySelectorAll('.tab-screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).scrollTop = 0;
+  document.getElementById('top-sub').textContent = subtitle;
+}
+
+// ── ACCORDION: PD ──────────────────────────────────────
+function togglePD(hd) {
+  const body = hd.nextElementSibling;
+  const arr  = hd.querySelector('.pd-arr');
+  const open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  arr.classList.toggle('open', !open);
+  hd.classList.toggle('open', !open);
+}
+
+// ── ACCORDION: RETREAT ─────────────────────────────────
+function toggleRetreat(hd) {
+  const body = hd.nextElementSibling;
+  const arr  = hd.querySelector('.r-arr');
+  const open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  arr.classList.toggle('open', !open);
+}
+
+// ── TRACKER ────────────────────────────────────────────
+const habits = {
+  t1: [
+    "Morning ritual without phone (pranayam, affirmation, gratitudes)",
+    "Gym — lift heavy, stretch well",
+    "Pooja with Durga Chalisa",
+    "Screen-free lunch",
+    "Evening brain dump + skincare"
+  ],
+  t2: [
+    "Tongue scraping",
+    "Embodiment pause — 2 to 3 minutes after affirmations",
+    "Five written gratitudes (specific)",
+    "Heart-womb practice at mirror",
+    "Slow movement to music — 5 minutes",
+    "Vamakukshi — 10 min on left side after lunch",
+    "Step outside between 3 and 5 PM",
+    "Lights dimmed by 8 PM",
+    "No screens one hour before sleep"
+  ],
+  tw: [
+    "Sunday Reset (full architecture)",
+    "Abhyanga or body ritual",
+    "Solo-Founder peer connection (×2)",
+    "Thinking date with flatmate or friend",
+    "Space cleansing (loban or windows)",
+    "Posture wall practice",
+    "Hair oil ritual",
+    "Weekly review (notebook + tea)"
+  ],
+  tm: [
+    "Professional facial",
+    "One longer silence or half-day retreat",
+    "Review and rewrite goals",
+    "Read letter to self (write new one)",
+    "Gratitude for the month — written, full page"
+  ]
+};
+
+function getTodayKey() { return 'mw_' + new Date().toISOString().split('T')[0]; }
+
+function buildList(container, items, prefix) {
+  items.forEach((text, i) => {
+    const id = prefix + '_' + i;
+    const div = document.createElement('div');
+    div.className = 'h-item';
+    div.innerHTML = `<input type="checkbox" id="${id}"><label for="${id}">${text}</label>`;
+    div.querySelector('input').addEventListener('change', onCheck);
+    container.appendChild(div);
+  });
+}
+
+function onCheck() { saveState(); updateRing(); }
+
+function saveState() {
+  const key = getTodayKey();
+  const state = {};
+  document.querySelectorAll('.tier-body input[type=checkbox]').forEach(cb => { state[cb.id] = cb.checked; });
+  localStorage.setItem(key, JSON.stringify(state));
+}
+
+function loadState() {
+  const key = getTodayKey();
+  const state = JSON.parse(localStorage.getItem(key) || '{}');
+  document.querySelectorAll('.tier-body input[type=checkbox]').forEach(cb => { if (state[cb.id] !== undefined) cb.checked = state[cb.id]; });
+}
+
+function updateRing() {
+  const checks = document.querySelectorAll('#t1-body input[type=checkbox]');
+  let done = 0;
+  checks.forEach(c => { if (c.checked) done++; });
+  const total = checks.length;
+  const pct = Math.round((done / total) * 100);
+  const circ = 314;
+  document.getElementById('ring-fill').style.strokeDashoffset = circ - (pct / 100) * circ;
+  document.getElementById('ring-pct').textContent = pct + '%';
+  document.getElementById('ring-lbl').textContent = done + ' of ' + total + ' done';
+  const msgs = ['Start your day.', 'Good. Keep going.', 'Halfway there.', 'Strong day.', 'Almost there.', 'Perfect day.'];
+  document.getElementById('track-msg').textContent = msgs[Math.min(Math.floor((done / total) * (msgs.length - 1)), msgs.length - 1)];
+}
+
+buildList(document.getElementById('t1-body'), habits.t1, 't1');
+buildList(document.getElementById('t2-body'), habits.t2, 't2');
+buildList(document.getElementById('tw-body'), habits.tw, 'tw');
+buildList(document.getElementById('tm-body'), habits.tm, 'tm');
+
+const now = new Date();
+document.getElementById('track-date').textContent = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+loadState();
+updateRing();
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  localStorage.removeItem(getTodayKey());
+  document.querySelectorAll('.tier-body input[type=checkbox]').forEach(cb => cb.checked = false);
+  updateRing();
+});
+</script>
+</body>
+</html>
