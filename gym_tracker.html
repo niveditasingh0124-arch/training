@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0f0f">
+<title>Training</title>
+<style>
+:root {
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --surface2: #242424;
+  --surface3: #2e2e2e;
+  --accent: #c8a96e;
+  --accent-dim: rgba(200,169,110,0.15);
+  --accent-glow: rgba(200,169,110,0.3);
+  --green: #4ade80;
+  --green-dim: rgba(74,222,128,0.15);
+  --red: #f87171;
+  --text: #f0f0f0;
+  --text2: #aaaaaa;
+  --text3: #666666;
+  --border: rgba(255,255,255,0.08);
+  --timer-color: #fb923c;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; background: var(--bg); }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* HEADER */
+.header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: calc(var(--safe-top) + 12px) 16px 0;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.3px;
+}
+.unit-toggle {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 12px;
+  color: var(--text2);
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.unit-toggle:active { opacity: 0.7; }
+
+/* WEEK TABS */
+.week-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.week-tab {
+  flex: 1;
+  padding: 7px 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text3);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.week-tab.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+/* DAY TABS */
+.day-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.day-tab {
+  flex: 1;
+  padding: 8px 2px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text3);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.3;
+  transition: all 0.15s;
+}
+.day-tab .day-num { font-size: 14px; display: block; }
+.day-tab.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.day-tab.has-data .day-num::after {
+  content: '·';
+  color: var(--green);
+  margin-left: 1px;
+}
+
+/* BOTTOM NAV */
+.bottom-nav {
+  display: flex;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding-bottom: var(--safe-bottom);
+  flex-shrink: 0;
+}
+.nav-btn {
+  flex: 1;
+  padding: 10px 4px;
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: color 0.15s;
+}
+.nav-btn .nav-icon { font-size: 20px; line-height: 1; }
+.nav-btn.active { color: var(--accent); }
+.nav-btn:active { opacity: 0.7; }
+
+/* SCROLL AREA */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.card-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.card-header.no-toggle { cursor: default; }
+.card-body { padding: 0 16px 14px; }
+.card-body.hidden { display: none; }
+
+/* DAY HERO CARD */
+.day-hero {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+.day-hero-title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.day-hero-focus {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.day-hero-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.meta-chip {
+  background: var(--surface3);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.meta-chip .chip-label { color: var(--text3); font-size: 11px; }
+.meta-chip .chip-val { font-weight: 600; color: var(--text); }
+.rest-chip {
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+.rest-chip:active { opacity: 0.7; }
+
+/* WARMUP CARD */
+.warmup-text {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.warmup-skill {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--accent-dim);
+  border-radius: 10px;
+  border-left: 3px solid var(--accent);
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.chevron {
+  color: var(--text3);
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+.chevron.open { transform: rotate(90deg); }
+
+/* EXERCISE CARD */
+.ex-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  flex: 1;
+  padding-right: 8px;
+}
+.ex-meta {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.ex-badge {
+  background: var(--surface3);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.ex-badge.rpe-high { color: var(--red); }
+.ex-badge.rpe-med { color: var(--accent); }
+.ex-badge.rpe-low { color: var(--green); }
+.ex-notes {
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.5;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  display: none;
+}
+.ex-notes.visible { display: block; }
+.notes-toggle {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  margin-top: 4px;
+  display: inline-block;
+}
+.notes-toggle:active { opacity: 0.7; }
+
+/* SET BUTTONS ROW */
+.sets-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.set-btn {
+  min-width: 64px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.set-btn:active { transform: scale(0.96); }
+.set-btn.logged {
+  border-color: var(--green);
+  background: var(--green-dim);
+}
+.set-btn.skill-done {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.set-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.set-status {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text3);
+}
+.set-btn.logged .set-status { color: var(--green); font-size: 11px; }
+.set-btn.skill-done .set-status { color: var(--accent); font-size: 18px; }
+
+/* SKILL BLOCK */
+.skill-block {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.skill-block:active { opacity: 0.7; }
+.skill-done-btn {
+  min-width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.skill-done-btn.done {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.skill-block-text { flex: 1; }
+.skill-block-target { font-size: 13px; font-weight: 600; color: var(--text); }
+.skill-block-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* STRETCH REMINDER */
+.stretch-card {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stretch-icon { font-size: 28px; }
+.stretch-text { flex: 1; }
+.stretch-title { font-size: 14px; font-weight: 600; }
+.stretch-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* REST TIMER OVERLAY */
+#timer-overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  padding: 16px 20px calc(16px + var(--safe-bottom));
+  z-index: 50;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 -4px 40px rgba(0,0,0,0.6);
+}
+#timer-overlay.visible { transform: translateY(0); }
+.timer-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.timer-label {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+.timer-display {
+  text-align: center;
+  font-size: 72px;
+  font-weight: 300;
+  color: var(--timer-color);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 16px;
+  letter-spacing: -2px;
+}
+.timer-display.done { color: var(--green); }
+.timer-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.timer-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.timer-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  padding: 10px 28px;
+}
+.timer-btn:active { opacity: 0.7; }
+.timer-adjust {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.adjust-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.adjust-btn:active { opacity: 0.7; }
+
+/* LOG MODAL */
+#log-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  max-width: 480px;
+  margin: 0 auto;
+}
+#log-modal.hidden { display: none; }
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+}
+.modal-sheet {
+  position: relative;
+  width: 100%;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 16px 20px calc(24px + var(--safe-bottom));
+  z-index: 1;
+  border-top: 1px solid var(--border);
+}
+.modal-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.modal-sub {
+  font-size: 12px;
+  color: var(--text3);
+  text-align: center;
+  margin-bottom: 20px;
+}
+.input-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.input-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.input-field {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 12px;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.input-field:focus { border-color: var(--accent); }
+.input-field::placeholder { color: var(--text3); font-size: 16px; font-weight: 400; }
+.modal-prev {
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.modal-prev span { color: var(--text2); font-weight: 600; }
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+.modal-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modal-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+.modal-btn:active { opacity: 0.7; }
+
+/* TIMER EDIT MODAL */
+#timer-edit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: flex-end;
+  max-width: 480px;
+  margin: 0 auto;
+}
+#timer-edit-modal.hidden { display: none; }
+.timer-edit-sheet {
+  position: relative;
+  width: 100%;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 16px 20px calc(24px + var(--safe-bottom));
+  z-index: 1;
+  border-top: 1px solid var(--border);
+}
+.timer-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.preset-btn {
+  flex: 1;
+  min-width: 70px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+.preset-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.preset-btn:active { opacity: 0.7; }
+
+/* STRETCH TAB */
+.stretch-section {
+  margin-bottom: 8px;
+}
+.stretch-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 8px 0 6px;
+}
+.stretch-item {
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+.stretch-item:active { opacity: 0.7; }
+.stretch-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.stretch-check.done {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--green);
+}
+.stretch-item-main { flex: 1; }
+.stretch-item-name { font-size: 14px; font-weight: 600; }
+.stretch-item-meta {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+.stretch-item-cue {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.stretch-progress-bar {
+  background: var(--surface2);
+  border-radius: 6px;
+  height: 6px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+.stretch-progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 6px;
+  transition: width 0.3s;
+}
+
+/* HANDSTAND TAB */
+.hs-stage {
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.hs-stage-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.hs-stage-badge {
+  background: var(--accent);
+  color: #000;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.hs-stage-title {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+}
+.hs-stage-body { padding: 0 16px 14px; }
+.hs-stage-body.hidden { display: none; }
+.hs-drill {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+.hs-drill:active { opacity: 0.7; }
+.hs-drill-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border);
+  background: var(--surface3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.hs-drill-check.done {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.hs-drill-info { flex: 1; }
+.hs-drill-name { font-size: 13px; font-weight: 600; }
+.hs-drill-meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.hs-drill-note { font-size: 11px; color: var(--text3); margin-top: 3px; line-height: 1.4; }
+.hs-principles {
+  background: var(--accent-dim);
+  border-radius: 10px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  margin-top: 8px;
+}
+.hs-principles-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.hs-principle { font-size: 12px; color: var(--text2); line-height: 1.5; margin-bottom: 4px; }
+.hs-wrist-section {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+}
+.hs-wrist-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--red);
+  margin-bottom: 8px;
+}
+
+/* TOAST */
+#toast {
+  position: fixed;
+  top: calc(var(--safe-top) + 60px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  z-index: 100;
+  opacity: 0;
+  transition: all 0.3s;
+  white-space: nowrap;
+  max-width: 90%;
+  text-align: center;
+  pointer-events: none;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* PROGRESS INDICATOR */
+.day-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.day-progress-bar {
+  flex: 1;
+  background: var(--surface2);
+  border-radius: 4px;
+  height: 4px;
+  overflow: hidden;
+}
+.day-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+.day-progress-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-title">⚡ Training</div>
+      <button class="unit-toggle" id="unitToggle" onclick="toggleUnit()">kg</button>
+    </div>
+    <div class="week-tabs" id="weekTabs"></div>
+    <div class="day-tabs" id="dayTabs"></div>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div class="scroll-area" id="scrollArea"></div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-workout" onclick="setTab('workout')">
+      <span class="nav-icon">🏋️</span>
+      <span>Workout</span>
+    </button>
+    <button class="nav-btn" id="nav-stretch" onclick="setTab('stretch')">
+      <span class="nav-icon">🧘</span>
+      <span>Stretch</span>
+    </button>
+    <button class="nav-btn" id="nav-handstand" onclick="setTab('handstand')">
+      <span class="nav-icon">🤸</span>
+      <span>Handstand</span>
+    </button>
+    <button class="nav-btn" id="nav-lsit" onclick="setTab('lsit')">
+      <span class="nav-icon">🪑</span>
+      <span>L-Sit</span>
+    </button>
+    <button class="nav-btn" id="nav-pullup" onclick="setTab('pullup')">
+      <span class="nav-icon">💪</span>
+      <span>Pull-Up</span>
+    </button>
+  </div>
+</div>
+
+<!-- REST TIMER -->
+<div id="timer-overlay">
+  <div class="timer-handle"></div>
+  <div class="timer-label">REST</div>
+  <div class="timer-display" id="timerDisplay">2:00</div>
+  <div class="timer-controls">
+    <button class="timer-btn" onclick="skipTimer()">Skip</button>
+    <button class="timer-btn primary" id="timerToggleBtn" onclick="toggleTimer()">Pause</button>
+  </div>
+  <div class="timer-adjust">
+    <button class="adjust-btn" onclick="adjustTimer(-30)">−30s</button>
+    <button class="adjust-btn" onclick="adjustTimer(30)">+30s</button>
+  </div>
+</div>
+
+<!-- LOG MODAL -->
+<div id="log-modal" class="hidden">
+  <div class="modal-backdrop" onclick="closeLogModal()"></div>
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">Log Set 1</div>
+    <div class="modal-sub" id="modalSub">Target: 4-6 reps</div>
+    <div class="modal-prev" id="modalPrev" style="display:none">Previous: <span id="modalPrevVal"></span></div>
+    <div class="input-row">
+      <div class="input-group">
+        <div class="input-label" id="weightLabel">Weight (kg)</div>
+        <input class="input-field" type="number" id="weightInput" placeholder="—" min="0" max="500" step="0.5" inputmode="decimal">
+      </div>
+      <div class="input-group">
+        <div class="input-label">Reps</div>
+        <input class="input-field" type="number" id="repsInput" placeholder="—" min="1" max="100" inputmode="numeric">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeLogModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="logSet()">Log Set ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- TIMER EDIT MODAL -->
+<div id="timer-edit-modal" class="hidden">
+  <div class="modal-backdrop" onclick="closeTimerEdit()"></div>
+  <div class="timer-edit-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Rest Timer Default</div>
+    <div class="modal-sub">Set default for this day</div>
+    <div class="timer-presets" id="timerPresets"></div>
+    <div class="modal-actions">
+      <button class="modal-btn primary" onclick="closeTimerEdit()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+//  PROGRAM DATA
+// ─────────────────────────────────────────────
+const WARMUP_SKILL = '+5 min chin-up skill: Scap pulls 2×8 → Dead hang 2×20-30s (+5s/week, aim 45s by W4) → Jumping chin-up + slow negative 2×2-3';
+
+const DAY_CONFIGS = [
+  { label: 'Back',       focus: 'Strength / Heavy Pull',          restDefault: 120, chinUpSkill: false, warmupText: 'Upper body — dynamic mobility (3 min) + scap + shoulder activation (3-4 min). Then: Assisted Chin-Up Machine warm-up sets × 2-3 (lighter assistance than working weight) — this is skill practice AND a prime for the main back work.' },
+  { label: 'Glutes+H',  focus: 'Glutes + Hamstrings Strength',   restDefault: 120, chinUpSkill: false, warmupText: 'Lower body — hip circles, glute bridges, banded clamshells, hamstring + ankle mobility (8-10 min) + ramp-up sets' },
+  { label: 'Chest+Tri', focus: 'Chest + Triceps',                restDefault: 90,  chinUpSkill: false, warmupText: 'Upper body — dynamic mobility (3 min) + push-up warm-up: wide push-ups 2×10 → close push-ups 2×8 → slow negative push-ups 2×6 (4s down). Primes chest, front delts + triceps before loading.' },
+  { label: 'Shld+Bi',   focus: 'Shoulders + Biceps',             restDefault: 90,  chinUpSkill: true,  warmupText: 'Upper body — dynamic mobility (3 min) + rotator cuff + band pull-aparts (3-4 min) + ramp-up sets' },
+  { label: 'Glutes+Q',  focus: 'Glutes + Quads Hypertrophy',     restDefault: 90,  chinUpSkill: false, warmupText: 'Lower body — hip circles, quad + hip flexor stretches, glute activation, ankle mobility (8-10 min) + ramp-up sets' },
+  { label: 'Skills',    focus: 'Core + Agility + Handstand',     restDefault: 60,  chinUpSkill: false, warmupText: 'Agility warm-up (~12 min): Agility Ladder (3-4 passes, high knees + lateral shuffle) → 5-10-5 Cone Shuttle (4-5 sprints, time each) → Broad Jump (3-5 reps, full reset). Then dynamic mobility (2-3 min) before handstand.' },
+];
+
+// Per-day exercise templates — primary:true = must-do, primary:false = optional/cuttable
+const DAY_EXERCISES = [
+  // DAY 1 - Back (do 4-5 of 7)
+  [
+    { name: 'Chin-Up Negatives (step/jump to top, lower 4-5s)', notes: 'THE #1 chin-up builder. Jump to chin-over-bar, lower slowly (count 1-2-3-4-5). If you drop fast, reduce reps. Goal: 5s control every rep by W4.', noWeight: true, primary: true },
+    { name: 'Conventional Deadlift (alt: Good Mornings)', notes: 'Deadlift: reset each rep, no touch-and-go on heavy sets. Alt — Good Mornings: barbell on upper back, hinge at hips until torso near parallel, maintain neutral spine. Great for hamstring + lower back strength. Swap in on W3 or whenever Deadlift gets stale.', noWeight: false, primary: true },
+    { name: 'T-Bar Row (or Barbell Row)', notes: 'Hinge 45°, torso locked, core braced, 2s negative. Pause at top. Focus on mid-back squeeze.', noWeight: false, primary: true },
+    { name: 'Wide-Grip Lat Pulldown', notes: 'Lead with elbows; slight lean back. Mimics the pull-up pattern — reinforces the motion. Pick this OR Face Pulls.', noWeight: false, primary: false },
+    { name: 'Face Pulls (rope, high)', notes: 'External rotation at end. Rear delts + upper back. Pick this OR Lat Pulldown.', noWeight: false, primary: false },
+    { name: 'L-Sit Progression (core + skill)', notes: 'Stage 1: Tuck L-sit on parallettes/floor OR hanging tuck. Stage 2: One-leg L-sit. Stage 3: Full L-sit. Hold each set to failure. Also on Day 6 — do both days for faster progression.', noWeight: true, isTime: true, primary: true },
+  ],
+  // DAY 2 - Glutes + Hamstrings (4 main + calves = 5)
+  [
+    { name: 'Barbell Hip Thrust', notes: 'Full lockout; 1-2s pause at top. Chin tucked.', noWeight: false, primary: true },
+    { name: 'Romanian Deadlift (barbell)', notes: 'Hinge only. Bar travels close to legs.', noWeight: false, primary: true },
+    { name: 'Bulgarian Split Squat (DB)', notes: 'Front foot forward; torso slight forward lean for glute bias.', noWeight: false, primary: true },
+    { name: 'Seated Leg Curl', notes: 'Point toes up; 2s negative.', noWeight: false, primary: true },
+    { name: 'Cable Hip Abduction (standing, per leg)', notes: 'Keep torso still; work the hip, not the lean.', noWeight: false, primary: false },
+    { name: '45° Back Extension (glute-biased, feet turned out)', notes: 'Round slightly through thoracic; squeeze glutes at top.', noWeight: false, primary: false },
+    { name: 'Seated Calf Raise (soleus)', notes: '1s pause at top, 2s descent. Soleus responds best to higher reps + slow tempo.', noWeight: false, primary: true },
+  ],
+  // DAY 3 - Chest + Triceps (3 chest + 2 tri)
+  [
+    { name: 'Incline Barbell Bench Press (30°)', notes: 'Tuck elbows ~60°. Pause 1s at chest.', noWeight: false, primary: true },
+    { name: 'Flat Dumbbell Press', notes: 'Controlled descent; strong lockout.', noWeight: false, primary: true },
+    { name: 'Dip Progression (calisthenics skill)', notes: 'Stage 1: Support hold 3×20-30s. Stage 2: Dip negatives 3×3-5 (lower 4-5s). Stage 3: Assisted dips 3×6-8. Stage 4: Strict dips 3×6-10. Stage 5: Weighted. Progress when stage feels RPE 7.', noWeight: true, isSkill: true, primary: true },
+    { name: 'Low-to-High Cable Chest Fly', notes: 'Squeeze inner chest at midline. No momentum. Add if time allows.', noWeight: false, primary: false },
+    { name: 'EZ-Bar Skull Crushers', notes: 'Aim for forehead/behind head. Elbows forward of shoulder.', noWeight: false, primary: true },
+    { name: 'Overhead Rope Triceps Extension', notes: 'Full stretch overhead. Elbows high + still. Pick this OR Rope Pushdown.', noWeight: false, primary: false },
+    { name: 'Rope Pushdown', notes: 'Spread the rope at the bottom. Lateral head finisher. Pick this OR Overhead Extension.', noWeight: false, primary: false },
+  ],
+  // DAY 4 - Shoulders + Biceps (3 shoulders + 2 biceps)
+  [
+    { name: 'Standing Barbell Overhead Press', notes: 'Glutes squeezed; ribs down. No leg drive.', noWeight: false, primary: true },
+    { name: 'Arnold Press (seated DB)', notes: 'Full rotation. Controlled at bottom.', noWeight: false, primary: true },
+    { name: 'Cable Lateral Raise (single-arm)', notes: "Lead with elbow. Slight forward lean; don't shrug.", noWeight: false, primary: true },
+    { name: 'Reverse Pec Deck', notes: 'Neutral grip. Pull with rear delts, not traps. Add if time allows.', noWeight: false, primary: false },
+    { name: 'Barbell Curl (strict)', notes: 'Back to wall if needed. No swing.', noWeight: false, primary: true },
+    { name: 'Incline DB Curl (long head stretch)', notes: 'Elbows back; full stretch at bottom. Pick this OR Hammer Curl.', noWeight: false, primary: true },
+    { name: 'Hammer Curl (alternating or both)', notes: 'Brachialis + forearms. Slow negatives. Pick this OR Incline DB Curl.', noWeight: false, primary: false },
+  ],
+  // DAY 5 - Glutes + Quads (4 main + calves = 5)
+  [
+    { name: 'High-Bar Back Squat', notes: 'Full depth. Knees track over toes.', noWeight: false, primary: true },
+    { name: 'Reverse Lunges (DB)', notes: 'Step back into lunge — more controlled than walking lunges, easier to load heavy. Keep torso upright, front knee tracks over toes. Long step back = more glute bias.', noWeight: false, primary: true },
+    { name: 'Leg Press (feet high, hip-width)', notes: "Knees to chest; don't round lower back.", noWeight: false, primary: true },
+    { name: 'Hip Abduction Machine', notes: 'Lean forward 10-15° — this shifts load from outer thigh to glute medius (upper glute). Push knees out slowly, hold 1-2s at top, 2-3s return. Feel the burn on the side of the glute, not the thigh.', noWeight: false, primary: true },
+    { name: 'Cable Glute Kickback (single leg)', notes: 'Hinge slightly. Kick back + slightly outward.', noWeight: false, primary: false },
+    { name: 'Barbell Hip Thrust (paused, moderate load)', notes: '2s pause at top every rep. Lighter than Day 2 — focus on the squeeze and time under tension.', noWeight: false, primary: false },
+    { name: 'Leg Extension (quad finisher)', notes: '1s hold at top. Add if time allows.', noWeight: false, primary: false },
+    { name: 'Standing Calf Raise (leg press or Smith) — gastroc', notes: 'Full stretch at bottom, explosive up, 2s pause at top. Heavy. Gastroc responds to lower reps + load.', noWeight: false, primary: true },
+  ],
+  // DAY 6 - Core + Handstand + Skill (do 5-6 from main block)
+  [
+    { name: 'Handstand Skill Block', notes: "Wrist prep (3 min) → see Handstand tab for full stage work. ~15 min total. Shoulders should be fresh — agility warm-up is done, don't rush into this.", noWeight: true, isSkill: true, primary: true },
+    { name: 'L-Sit Skill Block (parallettes or floor)', notes: 'Tuck L-sit → One-leg L-sit → Full L-sit. Max holds × 3 sets. Log seconds in Skill tab.', noWeight: true, isTime: true, primary: true },
+    { name: 'Pallof Press (cable anti-rotation)', notes: '2s hold at full extension. Builds a tight, narrow core without adding width — best core exercise for hourglass.', noWeight: false, primary: true },
+    { name: 'Side Plank w/ Hip Lift (obliques)', notes: 'Dip hip + drive up. Stack shoulder. Anti-lateral flexion — strengthens obliques without bulking them.', noWeight: false, primary: true },
+    { name: 'Dead Bug (contralateral)', notes: 'Low back glued to floor. Slow tempo. Deep core + spine stability — zero waist-widening effect.', noWeight: false, primary: true },
+    { name: 'Ab Wheel Rollout (knees or toes)', notes: 'Ribs tucked. Slow return. Great strength builder but can thicken the rectus abdominis over time — do if time allows.', noWeight: false, primary: false },
+    { name: 'Hanging Leg Raise (strict)', notes: 'Legs to parallel or higher. No swing. Same note as ab wheel — optional finisher if energy remains.', noWeight: false, primary: false },
+  ],
+];
+
+// Week-by-week sets/reps/RPE for each day
+// Format: [sets, reps, rpe] for each exercise in order
+const WEEK_DATA = [
+  // WEEK 1
+  {
+    name: 'Week 1', subtitle: 'Accumulation — Baseline loads. Lock in form. RPE 7.',
+    days: [
+      {
+        warmupExtra: null,
+        exercises: [
+          ['3','3-5','8'], ['3','4-6','8'], ['3','8-10','8'], ['3','10-12','8'], ['3','15','7'], ['3','Max hold ×3','8'],
+        ]
+      },
+      {
+        warmupExtra: WARMUP_SKILL,
+        exercises: [
+          ['5','4-6','8'], ['5','6-8','7-8'], ['3','8-10/leg','8'], ['3','10-12','8'], ['3','12-15/leg','7'], ['3','12','7'], ['3','12-15','7'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['4','5','8'], ['4','6-8','8'], ['3','See notes','8'], ['3','10-12','7'], ['3','8-10','8'], ['3','10-12','7'], ['3','12-15','7'],
+        ]
+      },
+      {
+        warmupExtra: WARMUP_SKILL,
+        exercises: [
+          ['4','4-6','8'], ['3','8-10','8'], ['3','12-15/side','7'], ['3','12-15','7'], ['4','6-8','8'], ['3','10-12','7'], ['3','10-12','7'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['5','6-8','8'], ['3','10/leg','8'], ['3','10-12','8'], ['3','15-20','7'], ['3','12-15/side','7'], ['3','10-12','7'], ['3','12-15','7'], ['3','8-12','8'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['—','Stage 1','—'], ['—','Max hold ×3','—'], ['3','8-10','7-8'], ['3','10-12','8'], ['3','10/side','7'], ['3','10-12/side','7'], ['3','10/side','6'],
+        ]
+      },
+    ]
+  },
+  // WEEK 2
+  {
+    name: 'Week 2', subtitle: 'Volume — +1 set on primaries. RPE 7-8.',
+    days: [
+      {
+        warmupExtra: null,
+        exercises: [
+          ['4','3-5','8'], ['4','4-6','8'], ['4','8-10','8'], ['3','10-12','8'], ['3','15','7'], ['3','Max hold ×3','8'],
+        ]
+      },
+      {
+        warmupExtra: WARMUP_SKILL,
+        exercises: [
+          ['5','4-6','8'], ['5','6-8','8'], ['4','8-10/leg','8'], ['3','10-12','8'], ['3','12-15/leg','8'], ['3','12','8'], ['3','12-15','8'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['5','5','8'], ['5','6-8','8'], ['4','See notes','8'], ['3','10-12','8'], ['3','8-10','8'], ['3','10-12','8'], ['3','12-15','8'],
+        ]
+      },
+      {
+        warmupExtra: WARMUP_SKILL,
+        exercises: [
+          ['5','4-6','8'], ['4','8-10','8'], ['3','12-15/side','8'], ['3','12-15','8'], ['5','6-8','8'], ['3','10-12','8'], ['3','10-12','8'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['5','6-8','8'], ['4','10/leg','8'], ['4','10-12','8'], ['3','15-20','8'], ['3','12-15/side','8'], ['3','10-12','8'], ['3','12-15','8'], ['3','8-12','8'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['—','Stage 1-2','—'], ['—','Max hold ×3','—'], ['4','8-10','8'], ['4','10-12','8'], ['3','10/side','8'], ['3','10-12/side','8'], ['3','10/side','7'],
+        ]
+      },
+    ]
+  },
+  // WEEK 3
+  {
+    name: 'Week 3', subtitle: 'Intensification — Heavier loads, fewer reps. RPE 8-9.',
+    days: [
+      {
+        warmupExtra: null,
+        exercises: [
+          ['3','3-5','9'], ['3','3-5','9'], ['3','6-8','9'], ['3','8-10','9'], ['3','12-15','8'], ['3','Max hold ×3','9'],
+        ]
+      },
+      {
+        warmupExtra: WARMUP_SKILL,
+        exercises: [
+          ['5','3-5','9'], ['5','5-6','9'], ['3','6-8/leg','9'], ['3','8-10','9'], ['3','10-12/leg','8'], ['3','10','8'], ['3','10-12','8'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['4','4','9'], ['4','5-6','9'], ['3','See notes','9'], ['3','8-10','8'], ['3','6-8','8'], ['3','8-10','8'], ['3','10-12','8'],
+        ]
+      },
+      {
+        warmupExtra: WARMUP_SKILL,
+        exercises: [
+          ['4','3-5','9'], ['3','6-8','9'], ['3','10-12/side','8'], ['3','10-12','8'], ['4','5-6','9'], ['3','8-10','8'], ['3','8-10','8'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['5','5-6','9'], ['3','8/leg','9'], ['3','8-10','9'], ['3','12-15','8'], ['3','10-12/side','8'], ['3','8-10','8'], ['3','10-12','8'], ['3','6-8','9'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['—','Stage 2','—'], ['—','Max hold ×4','—'], ['4','8-10','8'], ['4','10-12','8'], ['3','10/side','8'], ['3','10-12/side','8'], ['3','10/side','7'],
+        ]
+      },
+    ]
+  },
+  // WEEK 4
+  {
+    name: 'Week 4', subtitle: 'Deload — ~60% volume. Keep form. RPE 6. Recover.',
+    days: [
+      {
+        warmupExtra: null,
+        exercises: [
+          ['2','3-5','6'], ['2','4-6','6'], ['2','10-12','6'], ['2','12-15','6'], ['2','15','6'], ['2','Max hold ×2','6'],
+        ]
+      },
+      {
+        warmupExtra: WARMUP_SKILL,
+        exercises: [
+          ['3','4-6','6'], ['3','6-8','6'], ['2','10-12/leg','6'], ['2','12-15','6'], ['2','15/leg','6'], ['2','15','6'], ['2','15','6'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['3','6','6'], ['3','8-10','6'], ['2','See notes','6'], ['2','12-15','6'], ['2','10-12','6'], ['2','12-15','6'], ['2','15','6'],
+        ]
+      },
+      {
+        warmupExtra: WARMUP_SKILL,
+        exercises: [
+          ['3','6-8','6'], ['2','10-12','6'], ['2','15/side','6'], ['2','15','6'], ['3','8-10','6'], ['2','12-15','6'], ['2','12-15','6'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['3','8-10','6'], ['2','12/leg','6'], ['2','12-15','6'], ['2','15-20','6'], ['2','15/side','6'], ['2','12-15','6'], ['2','15','6'], ['2','12','6'],
+        ]
+      },
+      {
+        warmupExtra: null,
+        exercises: [
+          ['—','Stage 1','—'], ['—','Max hold ×2','—'], ['2','8-10','6'], ['2','10','6'], ['2','8/side','6'], ['2','8/side','6'], ['2','8/side','6'],
+        ]
+      },
+    ]
+  },
+];
+
+const STRETCH_DATA = {
+  sideA: [
+    { name: 'Cossack Squat (dynamic)', duration: '8 reps/side', sides: 'Both', cue: 'Sink into bent-knee side; straight leg extended. Shift slowly.' },
+    { name: "Lizard Pose / Deep Runner's Lunge", duration: '45s', sides: 'Each side', cue: 'Back knee down initially; progress to back leg straight.' },
+    { name: 'Half Pigeon', duration: '45-60s', sides: 'Each side', cue: 'Front shin parallel to mat edge. Fold forward gradually.' },
+    { name: 'Low Lunge (hip flexor stretch)', duration: '60s', sides: 'Each side', cue: 'Back knee on floor, front foot flat. Drive hips forward and down. Keep torso upright. For deeper stretch, raise arms overhead.' },
+    { name: 'Pancake Forward Fold (seated, wide)', duration: '60s', sides: '—', cue: 'Hinge from hips; chest to floor. Progress weekly.' },
+  ],
+  sideB: [
+    { name: 'Butterfly Stretch (soles together)', duration: '60s', sides: '—', cue: 'Knees wide; fold forward without rounding low back.' },
+    { name: 'Frog Pose (knees wide, forearms down)', duration: '60-90s', sides: '—', cue: 'Rock hips gently back and forth. Build tolerance.' },
+    { name: 'Seated Straddle (forward fold + side reach)', duration: '60s', sides: '—', cue: 'Hinge forward, then reach right/left for 15s each.' },
+    { name: 'Standing Wide-Stance Forward Fold', duration: '45s', sides: '—', cue: 'Toes slightly out. Walk hands between feet.' },
+    { name: 'Assisted Middle Split (blocks/slider)', duration: '30-45s', sides: '—', cue: 'Walk feet out on sliders OR use yoga blocks under hips. Progress slowly.' },
+  ]
+};
+
+const HANDSTAND_DATA = {
+  wristPrep: [
+    { name: 'Wrist circles (both directions)', reps: '15 each', sets: '1', note: 'Slow and controlled.' },
+    { name: 'Kneeling wrist stretch — fingers forward', reps: '20s', sets: '2', note: 'Lean weight forward gently.' },
+    { name: 'Kneeling wrist stretch — fingers back', reps: '20s', sets: '2', note: 'Then rock side to side.' },
+    { name: 'Wrist push-ups (back of hand)', reps: '8-10', sets: '2', note: 'Build tolerance gradually.' },
+  ],
+  stages: [
+    {
+      badge: 'Stage 1',
+      title: 'Build The Base (Weeks 1-3)',
+      drills: [
+        { name: 'Plank Hold (hollow body)', target: '30-45s × 3', note: 'Shoulders protracted, ribs tucked, glutes squeezed. This IS handstand posture.' },
+        { name: 'Pike Push-Up (feet on box)', target: '5-8 × 3', note: 'Closer to handstand push-up the higher the feet. Nose to floor between hands.' },
+        { name: 'Crow Pose Hold', target: '15-30s × 3', note: 'Knees on back of triceps. Builds hand balance + wrist strength.' },
+        { name: 'Downward Dog → Pike Shift', target: '8 reps × 3', note: 'Shift weight forward into shoulders. Shoulders stack over wrists.' },
+      ]
+    },
+    {
+      badge: 'Stage 2',
+      title: 'Wall Work (Weeks 3-6)',
+      drills: [
+        { name: 'Wall Walks (feet walk up wall)', target: '2-3 walks × 3', note: 'Hands start ~3ft from wall, walk in as feet go up. End close to wall.' },
+        { name: 'Chest-to-Wall Handstand Hold', target: '20-30s × 3-4', note: 'Chest facing wall, hands ~6in from wall. Protract shoulders, point toes.' },
+        { name: 'Back-to-Wall Handstand (kick-up)', target: '15-20s × 3', note: "Easier to kick into. Don't arch — work on hollow body shape." },
+        { name: 'Shoulder Shrugs (in handstand, wall)', target: '5-8 × 2', note: 'Protract + retract shoulders while in handstand. Builds active shoulder strength.' },
+      ]
+    },
+    {
+      badge: 'Stage 3',
+      title: 'Freestanding (Weeks 6+)',
+      drills: [
+        { name: 'Freestanding kick-up attempts', target: '8-10 kick-ups', note: 'Find your balance point. Expect many falls; bail sideways.' },
+        { name: 'Finger-tip press balance corrections', target: 'Practice', note: 'Fingertips = gas (pull toward floor), palm = brakes (push). Learn the feel.' },
+        { name: 'One-leg kick-up holds', target: '5-8 per side', note: 'Kick-up and hold 1-2s before bringing leg down.' },
+      ]
+    },
+  ],
+  principles: [
+    'Shoulders must stack directly over wrists. If they\'re behind, you\'ll fall.',
+    'Hollow body shape > banana shape. Ribs tucked, glutes squeezed.',
+    'Fingers DO the balancing — not the shoulders. Learn the finger-palm game early.',
+    'Always have a bail plan: step sideways (pirouette out) rather than fall backward.',
+    'Quality > quantity. 10 min of good practice beats 30 min of sloppy kick-ups.',
+  ]
+};
+
+const LSIT_DATA = {
+  stages: [
+    {
+      badge: 'Stage 1',
+      title: 'Support Hold + Compression (Weeks 1-2)',
+      goal: 'Build straight-arm strength + hip flexor compression. No L yet.',
+      drills: [
+        { name: 'Support Hold (parallel bars or dip bars)', target: '3 × 20-30s', note: 'Arms locked straight, shoulders depressed (press down hard). Hold your full bodyweight — this builds the base strength for the L.' },
+        { name: 'Seated Leg Raise (floor, legs straight)', target: '3 × 8-12 reps', note: 'Sit on floor, hands beside hips. Lift both legs 5-10cm off floor. Keep legs straight. This is the compression work — the same hip flexor motion as L-sit.' },
+        { name: 'Dead Hang Tuck Raise', target: '3 × 8-10 reps', note: 'Hang from bar, bring knees to chest. Builds the pulling compression. Transition to straight-leg raise when you can do 10 clean reps.' },
+      ]
+    },
+    {
+      badge: 'Stage 2',
+      title: 'Tuck L-Sit (Weeks 2-4)',
+      goal: 'Hold a tuck (knees bent, legs off floor) for 10+ seconds per set.',
+      drills: [
+        { name: 'Tuck L-Sit on Parallettes or Dip Bars', target: '3 × max hold (target: 10s)', note: 'Press down through shoulders (don\'t let them shrug up). Knees bent 90°, feet off floor. Every extra second counts. Log your time each session.' },
+        { name: 'Tuck L-Sit on Floor (fists)', target: '3 × max hold', note: 'Harder than parallettes — floor gives less clearance. Use fists on floor if not on bars. Progress to this after you hit 10s on bars.' },
+        { name: 'Hip Flexor Band Pull (seated)', target: '3 × 12-15 reps/side', note: 'Sit upright on bench, attach band to foot, pull knee up. Directly trains the hip flexors needed to hold the L.' },
+      ]
+    },
+    {
+      badge: 'Stage 3',
+      title: 'One-Leg L-Sit (Weeks 4-8)',
+      goal: 'One leg extended straight, one tucked. Hold 5-10s each side.',
+      drills: [
+        { name: 'One-Leg L-Sit (alternate legs)', target: '3 × 5-10s each side', note: 'From tuck position, slowly extend one leg straight. Keep hips square. Hold, then switch. This bridges the gap between tuck and full L.' },
+        { name: 'Assisted L-Sit (heel on chair/box)', target: '3 × 10-15s', note: 'Extend both legs straight but let heels rest lightly on a low surface. Reduces the hold difficulty while training the shape. Lower the surface over time.' },
+        { name: 'Compression Stretch (pancake fold)', target: '2 × 60s', note: 'Wide-leg seated fold — same muscles that limit your L-sit. Improving flexibility here directly improves L-sit height.' },
+      ]
+    },
+    {
+      badge: 'Stage 4',
+      title: 'Full L-Sit (Weeks 6+)',
+      goal: 'Both legs extended horizontal, held for 5s → 10s → 30s.',
+      drills: [
+        { name: 'Full L-Sit on Parallettes', target: '3 × max hold (target: 5s → 30s)', note: 'Both legs straight and parallel to floor. Press hard through shoulders — active depression is what keeps you up. Log every session: even 1 extra second is progress.' },
+        { name: 'L-Sit to Tuck Pulses', target: '3 × 5-8 reps', note: 'From full L, bend knees to tuck and extend back to L. Builds the strength endurance to hold the position under fatigue.' },
+        { name: 'Hanging L-Sit Hold (bar)', target: '3 × max hold', note: 'More difficult than parallettes — gravity pulls hips down more. Add this when you can hold 10s on parallettes. Great shoulder + grip endurance builder.' },
+      ]
+    },
+  ],
+  principles: [
+    'Shoulder depression (press DOWN) is the #1 key. If your shoulders are by your ears, you\'re already losing.',
+    'The limiting factor is almost always hip flexor strength, not arm strength. Train compression work (leg raises) every session.',
+    'Log your hold time every set. Even 0.5s improvement per session compounds over 12 weeks.',
+    'L-sit 2× per week (Day 1 + Day 6) is the right frequency — it\'s a skill that needs repetition, not just volume.',
+    'Cold muscles make L-sits harder. Always do them after your main work, never first.',
+  ]
+};
+
+const PULLUP_DATA = {
+  path: 'Chin-Up (underhand) → Neutral-Grip Pull-Up → Pull-Up (overhand)',
+  stages: [
+    {
+      badge: 'Stage 1',
+      title: 'Dead Hang & Scapular Work — Week 1 Only',
+      goal: 'Let tendons and connective tissue adapt to hanging load before adding any pulling stress. Week 1 = this only. No negatives yet.',
+      drills: [
+        { name: 'Dead Hang (overhand grip)', target: '3 × max hang (target: 30s+)', note: 'Hang fully relaxed — let shoulders rise to ears. Then actively depress (pull shoulders down). Train both. Grip + shoulder endurance is the foundation. Do this on lower body days (Day 2 + Day 5) so it doesn\'t pre-fatigue chin-up work.' },
+        { name: 'Scapular Pull (no arm bend)', target: '3 × 8-10 reps', note: 'Hang from bar. Without bending elbows, retract and depress shoulder blades — body rises slightly. This fires the lats before any full pull. Critical for avoiding shoulder injury early on.' },
+        { name: 'Active Hang (shoulders depressed)', target: '3 × 15-20s', note: 'Hang but keep shoulders pulled DOWN and back. Arms still straight. Builds the starting position strength for every chin-up rep.' },
+      ]
+    },
+    {
+      badge: 'Stage 2',
+      title: 'Chin-Up Negatives — Week 2 Onwards',
+      goal: 'Control a 5s descent from top position. Primary tool for your first strict rep.',
+      drills: [
+        { name: 'Chin-Up Negative (underhand grip)', target: '3-4 × 3-5 reps (5s descent)', note: 'Jump or step to chin-over-bar position, arms fully bent. Lower yourself as slowly as possible — count 1-2-3-4-5. If you drop in under 3s, reduce reps. Quality > quantity every time.' },
+        { name: 'Isometric Hold at 90° (underhand)', target: '3 × 10-15s', note: 'Jump to the mid-point (elbows at 90°), hold. Hardest part of the range — building strength here closes the gap to the first strict rep.' },
+        { name: 'Assisted Chin-Up Machine', target: '3 × 6-8 reps', note: 'Set assistance so last 2 reps are hard. REDUCE assistance by 2.5-5kg each week — less assistance = harder. Full ROM: chin over bar at top, arms straight at bottom. Log the assistance weight every session.' },
+      ]
+    },
+    {
+      badge: 'Stage 3',
+      title: 'First Strict Chin-Up (Weeks 4-8)',
+      goal: 'First full unassisted chin-up (underhand). Then build to 3, then 5.',
+      drills: [
+        { name: 'Strict Chin-Up attempts', target: '3-5 attempts per session', note: 'From dead hang, pull until chin clears bar. No kipping, no leg swing. If you can\'t complete one yet — do 1-2 negatives first to fatigue the path, then attempt. The attempt itself is training.' },
+        { name: 'Chin-Up cluster sets (rest-pause)', target: '3-5 singles with 20s rest between', note: 'Once you have 1 rep: do 1 rep, rest 20s, do 1 more, repeat 3-5 times. This is how you build from 1 → 3 → 5 reps faster than straight sets.' },
+        { name: 'Lat Pulldown (underhand, heavy)', target: '4 × 5-6 reps (heavy)', note: 'Heavier than your hypertrophy sets — treat this as strength work. Directly transfers to chin-up strength. Lead with elbows, not hands.' },
+      ]
+    },
+    {
+      badge: 'Stage 4',
+      title: 'Neutral-Grip Pull-Up (Weeks 8-12)',
+      goal: 'Bridge from chin-up to overhand. Neutral grip = 10-15% harder than chin-up.',
+      drills: [
+        { name: 'Neutral-Grip Pull-Up (palms facing each other)', target: '3 × max reps', note: 'Same mechanics as chin-up but palms face each other — slightly less bicep advantage. If your gym has a neutral-grip bar or V-handle attachment, use it. This is the natural middle step before full overhand.' },
+        { name: 'Neutral-Grip Negatives', target: '3 × 3-5 reps (5s descent)', note: 'Same as chin-up negatives but neutral grip. Use these to build strength in the range where neutral grip feels harder than chin-up.' },
+        { name: 'Weighted Chin-Up (light)', target: '3 × 3-5 reps (+2.5-5kg)', note: 'Once you have 5 strict chin-ups, add a small weight. Stronger chin-up = faster neutral and overhand progression. Use a belt, dumbbell between feet, or weighted vest.' },
+      ]
+    },
+    {
+      badge: 'Stage 5',
+      title: 'Overhand Pull-Up (Weeks 10-16)',
+      goal: 'First strict overhand pull-up. Then 3, then 5.',
+      drills: [
+        { name: 'Pull-Up Negative (overhand grip)', target: '3-4 × 3-5 reps (5s descent)', note: 'Same negative protocol as chin-ups, now overhand. Harder because bicep leverage is gone — lats and rear delts carry more load. This is the main builder for your first strict pull-up.' },
+        { name: 'Strict Pull-Up attempts', target: '3-5 attempts per session', note: 'From dead hang, overhand grip (shoulder-width or slightly wider), pull chin over bar. No swing. Use cluster sets once you get the first rep — same rest-pause approach as Stage 3.' },
+        { name: 'Wide-Grip Lat Pulldown (overhand)', target: '4 × 5-6 reps (heavy)', note: 'Mimics the exact pull-up pattern. Heavier weight here = more overhand pull-up strength. Always control the return — slow negative on the machine trains the same path.' },
+      ]
+    },
+  ],
+  milestones: [
+    '🟡 Week 1 complete (dead hangs + scap work) → start negatives Week 2',
+    '🟡 5s controlled negative (3 reps) → attempt first strict chin-up',
+    '🟢 1 strict chin-up → start cluster sets',
+    '🟢 5 strict chin-ups → move to neutral-grip + add weight to chin-up',
+    '🟢 5 neutral-grip pull-ups → start overhand progression',
+    '🏆 1 strict overhand pull-up → you made it. Build from here.',
+  ],
+  principles: [
+    'Chin-up first — underhand is ~15-20% easier due to bicep leverage. It gets you to your first strict rep faster.',
+    'Negatives are the #1 tool. You build the most strength in the lowering phase. 3 controlled negatives > 10 sloppy attempts.',
+    'Less assistance = harder on the assisted machine. Many people accidentally keep it too easy. Chase the drop.',
+    'The path: Chin-Up → Neutral-Grip → Pull-Up. Each step adds a few weeks. Don\'t skip neutral — it bridges the gap.',
+    'Frequency beats volume. 3× per week skill work (even 5 min) beats 1× heavy session. You\'re training a movement pattern.',
+  ]
+};
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let state = {
+  tab: 'workout',
+  week: 0,
+  day: 0,
+  unit: 'kg',
+  restDefaults: [120, 120, 90, 90, 90, 60],
+  logs: {},          // "w{w}_d{d}_ex{e}_s{s}" → {weight, reps}
+  skillDone: {},     // "w{w}_d{d}_ex{e}" → bool
+  stretchDone: {},   // "s_{i}" → bool
+  hsDone: {},        // "hs_s{stage}_d{drill}" → bool
+  lsDone: {},        // "ls_s{stage}_d{drill}" → bool
+  puDone: {},        // "pu_s{stage}_d{drill}" → bool
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('nivedita_v2');
+    if (saved) {
+      const p = JSON.parse(saved);
+      Object.assign(state, p);
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('nivedita_v2', JSON.stringify(state));
+  } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
+//  TIMER STATE
+// ─────────────────────────────────────────────
+let timerInterval = null;
+let timerRemaining = 0;
+let timerRunning = false;
+let timerVisible = false;
+
+function startTimer(seconds) {
+  timerRemaining = seconds;
+  timerRunning = true;
+  showTimerOverlay();
+  updateTimerDisplay();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      document.getElementById('timerDisplay').classList.add('done');
+      document.getElementById('timerToggleBtn').textContent = 'Done';
+      navigator.vibrate && navigator.vibrate([200, 100, 200]);
+      return;
+    }
+    timerRemaining--;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerRemaining / 60);
+  const s = timerRemaining % 60;
+  document.getElementById('timerDisplay').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  document.getElementById('timerDisplay').classList.remove('done');
+  document.getElementById('timerToggleBtn').textContent = timerRunning ? 'Pause' : 'Resume';
+}
+
+function toggleTimer() {
+  if (timerRemaining <= 0) { hideTimerOverlay(); return; }
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('timerToggleBtn').textContent = 'Resume';
+  } else {
+    timerRunning = true;
+    document.getElementById('timerToggleBtn').textContent = 'Pause';
+    timerInterval = setInterval(() => {
+      if (timerRemaining <= 0) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        document.getElementById('timerDisplay').classList.add('done');
+        document.getElementById('timerToggleBtn').textContent = 'Done';
+        navigator.vibrate && navigator.vibrate([200, 100, 200]);
+        return;
+      }
+      timerRemaining--;
+      updateTimerDisplay();
+    }, 1000);
+  }
+}
+
+function skipTimer() { clearInterval(timerInterval); timerRunning = false; hideTimerOverlay(); }
+function adjustTimer(delta) {
+  timerRemaining = Math.max(10, timerRemaining + delta);
+  updateTimerDisplay();
+}
+function showTimerOverlay() { document.getElementById('timer-overlay').classList.add('visible'); timerVisible = true; }
+function hideTimerOverlay() { document.getElementById('timer-overlay').classList.remove('visible'); timerVisible = false; }
+
+// ─────────────────────────────────────────────
+//  LOG MODAL
+// ─────────────────────────────────────────────
+let modalCtx = null;
+
+function openLogModal(weekIdx, dayIdx, exIdx, setIdx) {
+  const weekDay = WEEK_DATA[weekIdx].days[dayIdx];
+  const exData = DAY_EXERCISES[dayIdx][exIdx];
+  const setData = weekDay.exercises[exIdx];
+  const key = `w${weekIdx}_d${dayIdx}_ex${exIdx}_s${setIdx}`;
+
+  modalCtx = { weekIdx, dayIdx, exIdx, setIdx, key };
+
+  document.getElementById('modalTitle').textContent = `Log Set ${setIdx + 1}`;
+  document.getElementById('modalSub').textContent = `${exData.name.split('(')[0].trim()} · Target: ${setData[1]} reps`;
+  document.getElementById('weightLabel').textContent = `Weight (${state.unit})`;
+
+  const prevLog = state.logs[key];
+  const prevEl = document.getElementById('modalPrev');
+  const prevVal = document.getElementById('modalPrevVal');
+  if (prevLog) {
+    prevEl.style.display = 'block';
+    prevVal.textContent = `${prevLog.weight}${state.unit} × ${prevLog.reps}`;
+  } else {
+    prevEl.style.display = 'none';
+  }
+
+  document.getElementById('weightInput').value = prevLog ? prevLog.weight : '';
+  document.getElementById('repsInput').value = prevLog ? prevLog.reps : '';
+  document.getElementById('log-modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('weightInput').focus(), 100);
+}
+
+function closeLogModal() {
+  document.getElementById('log-modal').classList.add('hidden');
+  modalCtx = null;
+}
+
+function logSet() {
+  if (!modalCtx) return;
+  const weight = document.getElementById('weightInput').value;
+  const reps = document.getElementById('repsInput').value;
+
+  state.logs[modalCtx.key] = { weight: weight || '—', reps: reps || '—' };
+  saveState();
+  closeLogModal();
+  renderWorkout();
+
+  const restSecs = state.restDefaults[modalCtx.dayIdx];
+  startTimer(restSecs);
+  showToast('Set logged ✓ Rest starting');
+}
+
+// ─────────────────────────────────────────────
+//  TIMER EDIT
+// ─────────────────────────────────────────────
+let editingDayIdx = null;
+
+function openTimerEdit(dayIdx) {
+  editingDayIdx = dayIdx;
+  const presets = [45, 60, 90, 120, 150, 180];
+  const current = state.restDefaults[dayIdx];
+  const el = document.getElementById('timerPresets');
+  el.innerHTML = presets.map(s => {
+    const m = Math.floor(s/60), sec = s%60;
+    const label = sec === 0 ? `${m}:00` : `${m}:${sec.toString().padStart(2,'0')}`;
+    return `<button class="preset-btn ${s === current ? 'active' : ''}" onclick="setTimerPreset(${s})">${label}</button>`;
+  }).join('');
+  document.getElementById('timer-edit-modal').classList.remove('hidden');
+}
+
+function setTimerPreset(s) {
+  if (editingDayIdx === null) return;
+  state.restDefaults[editingDayIdx] = s;
+  saveState();
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderWorkout();
+}
+
+function closeTimerEdit() {
+  document.getElementById('timer-edit-modal').classList.add('hidden');
+  editingDayIdx = null;
+}
+
+// ─────────────────────────────────────────────
+//  TOGGLE FUNCTIONS
+// ─────────────────────────────────────────────
+function toggleUnit() {
+  state.unit = state.unit === 'kg' ? 'lbs' : 'kg';
+  document.getElementById('unitToggle').textContent = state.unit;
+  saveState();
+  showToast(`Switched to ${state.unit}`);
+}
+
+function setTab(tab) {
+  state.tab = tab;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`nav-${tab}`).classList.add('active');
+  renderMain();
+}
+
+function setWeek(w) {
+  state.week = w;
+  saveState();
+  renderTabs();
+  renderMain();
+}
+
+function setDay(d) {
+  state.day = d;
+  saveState();
+  renderTabs();
+  renderMain();
+  document.getElementById('scrollArea').scrollTop = 0;
+}
+
+function toggleCard(id) {
+  const body = document.getElementById(id);
+  const chevron = body.previousElementSibling.querySelector('.chevron');
+  if (body.classList.contains('hidden')) {
+    body.classList.remove('hidden');
+    if (chevron) chevron.classList.add('open');
+  } else {
+    body.classList.add('hidden');
+    if (chevron) chevron.classList.remove('open');
+  }
+}
+
+function toggleNotes(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const visible = el.style.display !== 'none';
+  el.style.display = visible ? 'none' : 'block';
+  const toggle = el.previousElementSibling;
+  if (toggle) toggle.textContent = visible ? 'form cue ▼' : 'hide ▲';
+}
+
+function toggleHsStage(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('hidden');
+}
+
+function markSkillDone(weekIdx, dayIdx, exIdx) {
+  const key = `w${weekIdx}_d${dayIdx}_ex${exIdx}`;
+  state.skillDone[key] = !state.skillDone[key];
+  saveState();
+  renderWorkout();
+  if (state.skillDone[key]) {
+    startTimer(state.restDefaults[dayIdx]);
+    showToast('Skill done! Rest starting ✓');
+  }
+}
+
+function toggleStretch(idx) {
+  const key = `s_${idx}`;
+  state.stretchDone[key] = !state.stretchDone[key];
+  saveState();
+  renderStretch();
+}
+
+function toggleHsDrill(stage, drill) {
+  const key = `hs_s${stage}_d${drill}`;
+  state.hsDone[key] = !state.hsDone[key];
+  saveState();
+  renderHandstand();
+}
+
+// ─────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ─────────────────────────────────────────────
+//  RENDERING
+// ─────────────────────────────────────────────
+function renderTabs() {
+  // Week tabs
+  const wt = document.getElementById('weekTabs');
+  wt.innerHTML = WEEK_DATA.map((w, i) =>
+    `<button class="week-tab ${i === state.week ? 'active' : ''}" onclick="setWeek(${i})">${w.name}</button>`
+  ).join('');
+
+  // Day tabs
+  const dt = document.getElementById('dayTabs');
+  dt.innerHTML = DAY_CONFIGS.map((d, i) => {
+    const hasData = Object.keys(state.logs).some(k => k.startsWith(`w${state.week}_d${i}_`));
+    return `<button class="day-tab ${i === state.day ? 'active' : ''} ${hasData ? 'has-data' : ''}" onclick="setDay(${i})">
+      <span class="day-num">D${i+1}</span>${d.label}
+    </button>`;
+  }).join('');
+}
+
+function rpeClass(rpe) {
+  const r = parseFloat(rpe);
+  if (r >= 9) return 'rpe-high';
+  if (r >= 7) return 'rpe-med';
+  return 'rpe-low';
+}
+
+function formatRest(secs) {
+  const m = Math.floor(secs/60), s = secs%60;
+  return s === 0 ? `${m}:00` : `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+function renderWorkout() {
+  const w = state.week, d = state.day;
+  const weekDayData = WEEK_DATA[w].days[d];
+  const dayConfig = DAY_CONFIGS[d];
+  const exTemplates = DAY_EXERCISES[d];
+  const weekMeta = WEEK_DATA[w];
+
+  // Count progress
+  let totalSets = 0, doneSets = 0;
+  weekDayData.exercises.forEach((ex, ei) => {
+    const template = exTemplates[ei];
+    if (!template) return;
+    const sets = parseInt(ex[0]);
+    if (!isNaN(sets) && !template.isAgility && !template.isSkill) {
+      totalSets += sets;
+      for (let s = 0; s < sets; s++) {
+        if (state.logs[`w${w}_d${d}_ex${ei}_s${s}`]) doneSets++;
+      }
+    }
+  });
+
+  const progressPct = totalSets > 0 ? Math.round((doneSets/totalSets)*100) : 0;
+
+  let html = '';
+
+  // Day hero
+  const restSecs = state.restDefaults[d];
+  html += `<div class="day-hero">
+    <div class="day-hero-title">Day ${d+1} — ${weekMeta.name}</div>
+    <div class="day-hero-focus">${dayConfig.focus}</div>
+    <div class="day-hero-meta">
+      <div class="meta-chip"><span class="chip-label">Phase</span>&nbsp;<span class="chip-val">${weekMeta.subtitle.split('—')[0].trim()}</span></div>
+      <div class="meta-chip rest-chip" onclick="openTimerEdit(${d})">⏱ <span class="chip-label">Rest</span>&nbsp;<span class="chip-val">${formatRest(restSecs)}</span></div>
+    </div>
+    <div class="day-progress">
+      <div class="day-progress-bar"><div class="day-progress-fill" style="width:${progressPct}%"></div></div>
+      <div class="day-progress-text">${doneSets}/${totalSets} sets</div>
+    </div>
+  </div>`;
+
+  // Warmup — always fully visible, driven by dayConfig
+  const hasChinUpSkill = dayConfig.chinUpSkill;
+  html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;">
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Warm-Up · ${hasChinUpSkill ? '10 min + 5 min chin-up skill' : '10 min'}</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;">${dayConfig.warmupText}</div>
+    ${hasChinUpSkill ? `<div style="margin-top:10px;padding:10px 12px;background:var(--accent-dim);border-radius:10px;border-left:3px solid var(--accent);font-size:13px;color:var(--text);line-height:1.5;">🔗 <strong>Chin-Up Skill (5 min):</strong><br>${WARMUP_SKILL}</div>` : ''}
+  </div>`;
+
+  // Exercises — flat cards with primary/optional visual distinction
+  let prevWasOptional = false;
+  weekDayData.exercises.forEach((exRow, ei) => {
+    const template = exTemplates[ei];
+    if (!template) return;
+    const [sets, reps, rpe] = exRow;
+    const isAgility = template.isAgility;
+    const isSkill = template.isSkill;
+    const isTime = template.isTime;
+    const noWeight = template.noWeight;
+    const isPrimary = template.primary !== false; // default true if not set
+    const numSets = parseInt(sets);
+
+    // Insert "Optional" divider on first optional exercise
+    if (!isPrimary && !prevWasOptional) {
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 4px;">
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;">Optional — pick 1-2</span>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+      </div>`;
+      prevWasOptional = true;
+    }
+
+    const cardBorderLeft = isPrimary ? '3px solid var(--accent)' : '3px solid var(--surface3)';
+    const cardOpacity = isPrimary ? '1' : '0.75';
+    const nameColor = isPrimary ? 'var(--text)' : 'var(--text2)';
+
+    if (isAgility || ((isSkill || isTime) && sets === '—')) {
+      const skillKey = `w${w}_d${d}_ex${ei}`;
+      const done = state.skillDone[skillKey];
+      const notesId = `notes_w${w}_d${d}_ex${ei}`;
+      html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);border-left:${cardBorderLeft};padding:14px 16px;opacity:${cardOpacity};">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;">${isAgility ? 'Agility' : isTime ? 'Skill · Hold' : 'Skill Block'}</span>
+          ${!isPrimary ? '<span style="font-size:10px;font-weight:700;background:var(--surface3);color:var(--text3);border-radius:4px;padding:2px 6px;text-transform:uppercase;letter-spacing:0.5px;">OPT</span>' : ''}
+        </div>
+        <div style="font-size:14px;font-weight:600;color:${nameColor};margin-bottom:8px;">${template.name}</div>
+        <div style="display:inline-block;background:var(--surface3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px;">Target: ${reps}</div>
+        <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="markSkillDone(${w},${d},${ei})">
+          <div style="width:44px;height:44px;border-radius:10px;border:1.5px solid ${done ? 'var(--accent)' : 'var(--border)'};background:${done ? 'var(--accent-dim)' : 'var(--surface3)'};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${done ? '✓' : '○'}</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:${done ? 'var(--accent)' : 'var(--text)'};">${done ? 'Completed ✓' : 'Tap to mark done'}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">${template.notes.substring(0, 70)}…</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--accent);cursor:pointer;margin-top:8px;" onclick="toggleNotes('${notesId}')">full instructions ▼</div>
+        <div id="${notesId}" style="display:none;font-size:12px;color:var(--text3);line-height:1.5;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">${template.notes}</div>
+      </div>`;
+
+    } else if (!isNaN(numSets)) {
+      let setsHtml = '';
+      for (let s = 0; s < numSets; s++) {
+        const logKey = `w${w}_d${d}_ex${ei}_s${s}`;
+        const log = state.logs[logKey];
+        const logged = !!log;
+        const statusText = logged
+          ? (noWeight || isTime ? (log.reps !== '—' ? log.reps + (isTime ? 's' : '') : '✓') : `${log.weight}<br>×${log.reps}`)
+          : '+';
+        setsHtml += `<button onclick="openLogModal(${w},${d},${ei},${s})" style="min-width:60px;padding:8px 6px;border-radius:10px;border:1.5px solid ${logged ? 'var(--green)' : 'var(--border)'};background:${logged ? 'var(--green-dim)' : 'var(--surface2)'};cursor:pointer;text-align:center;display:inline-flex;flex-direction:column;align-items:center;gap:3px;">
+          <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;">Set ${s+1}</span>
+          <span style="font-size:${logged && !noWeight ? '11px' : '14px'};font-weight:700;color:${logged ? 'var(--green)' : 'var(--text2)'};">${statusText}</span>
+        </button>`;
+      }
+
+      const notesId = `notes_w${w}_d${d}_ex${ei}`;
+      const rpeCol = rpeClass(rpe);
+      const rpeColor = rpeCol === 'rpe-high' ? 'var(--red)' : rpeCol === 'rpe-med' ? 'var(--accent)' : 'var(--green)';
+
+      html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);border-left:${cardBorderLeft};padding:14px 16px;opacity:${cardOpacity};">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:14px;font-weight:600;color:${nameColor};line-height:1.3;flex:1;padding-right:8px;">${template.name}</div>
+          ${!isPrimary ? '<span style="font-size:10px;font-weight:700;background:var(--surface3);color:var(--text3);border-radius:4px;padding:2px 6px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;flex-shrink:0;">OPT</span>' : ''}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+          <span style="background:var(--surface3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--text2);">${sets} sets</span>
+          <span style="background:var(--surface3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--text2);">${reps} reps</span>
+          <span style="background:var(--surface3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:${rpeColor};">RPE ${rpe}</span>
+          ${noWeight ? '<span style="background:var(--surface3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--text2);">Bodyweight</span>' : ''}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">${setsHtml}</div>
+        <div style="font-size:11px;color:var(--accent);cursor:pointer;" onclick="toggleNotes('${notesId}')">form cue ▼</div>
+        <div id="${notesId}" style="display:none;font-size:12px;color:var(--text3);line-height:1.5;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">${template.notes}</div>
+      </div>`;
+    }
+  });
+
+  // Stretch reminder
+  html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;">
+    <span style="font-size:28px;">🧘</span>
+    <div>
+      <div style="font-size:14px;font-weight:600;">Daily Stretch — 10-15 min</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px;">Side split + middle split flow → Stretch tab</div>
+    </div>
+  </div>`;
+
+  document.getElementById('scrollArea').innerHTML = html;
+}
+
+function renderStretch() {
+  const allItems = [...STRETCH_DATA.sideA, ...STRETCH_DATA.sideB];
+  const doneCount = allItems.filter((_, i) => state.stretchDone[`s_${i}`]).length;
+  const pct = Math.round((doneCount / allItems.length) * 100);
+
+  let html = `<div class="day-hero">
+    <div class="day-hero-title">Daily Stretch Flow</div>
+    <div class="day-hero-focus">Side splits + Middle splits • 10-15 min</div>
+    <div class="day-progress">
+      <div class="day-progress-bar"><div class="day-progress-fill" style="width:${pct}%"></div></div>
+      <div class="day-progress-text">${doneCount}/${allItems.length} done</div>
+    </div>
+  </div>`;
+
+  html += `<div class="stretch-section"><div class="stretch-section-title">Part A — Side Splits (5-7 min)</div>`;
+  STRETCH_DATA.sideA.forEach((item, i) => {
+    const done = !!state.stretchDone[`s_${i}`];
+    html += `<div class="stretch-item" onclick="toggleStretch(${i})">
+      <div class="stretch-check ${done ? 'done' : ''}">${done ? '✓' : ''}</div>
+      <div class="stretch-item-main">
+        <div class="stretch-item-name">${item.name}</div>
+        <div class="stretch-item-meta">${item.duration} · ${item.sides}</div>
+        <div class="stretch-item-cue">${item.cue}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="stretch-section"><div class="stretch-section-title">Part B — Middle Splits (5-7 min)</div>`;
+  STRETCH_DATA.sideB.forEach((item, i) => {
+    const idx = STRETCH_DATA.sideA.length + i;
+    const done = !!state.stretchDone[`s_${idx}`];
+    html += `<div class="stretch-item" onclick="toggleStretch(${idx})">
+      <div class="stretch-check ${done ? 'done' : ''}">${done ? '✓' : ''}</div>
+      <div class="stretch-item-main">
+        <div class="stretch-item-name">${item.name}</div>
+        <div class="stretch-item-meta">${item.duration} · ${item.sides}</div>
+        <div class="stretch-item-cue">${item.cue}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  html += `<div style="background:var(--accent-dim);border-radius:14px;padding:12px 14px;border-left:3px solid var(--accent);">
+    <div style="font-size:12px;color:var(--text2);line-height:1.6;">
+      <strong style="color:var(--accent)">Tip:</strong> Breathe through each position — don't bounce.<br>
+      <strong style="color:var(--accent)">PNF (every 3rd session):</strong> 10s contract → 20s deeper relax. Breaks plateaus.
+    </div>
+  </div>`;
+
+  document.getElementById('scrollArea').innerHTML = html;
+}
+
+function renderHandstand() {
+  const drill = (name, meta, note, doneKey, onclickFn) => {
+    const done = !!state.hsDone[doneKey];
+    return `<div onclick="${onclickFn}" style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+      <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid ${done ? 'var(--accent)' : 'var(--border)'};background:${done ? 'var(--accent-dim)' : 'var(--surface3)'};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px;color:var(--accent);">${done ? '✓' : ''}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">${name}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">${meta}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4;">${note}</div>
+      </div>
+    </div>`;
+  };
+
+  let html = `<div class="day-hero">
+    <div class="day-hero-title">Handstand Progression</div>
+    <div class="day-hero-focus">Beginner • ~25 min • Day 6 primary skill</div>
+  </div>`;
+
+  // Wrist prep — always visible
+  html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;">
+    <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Always First — Every Session</div>
+    <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:12px;">⚡ Stage 0 — Wrist Prep (3 min)</div>`;
+  HANDSTAND_DATA.wristPrep.forEach((d, i) => {
+    html += drill(d.name, `${d.reps} · ${d.sets} set${d.sets > 1 ? 's' : ''}`, d.note,
+      `hs_wrist_${i}`,
+      `state.hsDone['hs_wrist_${i}']=!state.hsDone['hs_wrist_${i}'];saveState();renderHandstand()`);
+  });
+  html += `</div>`;
+
+  // Stages — all flat, always visible
+  HANDSTAND_DATA.stages.forEach((stage, si) => {
+    html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="background:var(--accent);color:#000;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;">${stage.badge}</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);">${stage.title}</div>
+      </div>`;
+    stage.drills.forEach((d, di) => {
+      html += drill(d.name, d.target, d.note,
+        `hs_s${si}_d${di}`,
+        `toggleHsDrill(${si},${di})`);
+    });
+    html += `</div>`;
+  });
+
+  // Principles
+  html += `<div style="background:var(--accent-dim);border-radius:14px;padding:14px 16px;border-left:3px solid var(--accent);">
+    <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Key Principles</div>
+    ${HANDSTAND_DATA.principles.map(p => `<div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:6px;">• ${p}</div>`).join('')}
+  </div>`;
+
+  document.getElementById('scrollArea').innerHTML = html;
+}
+
+function renderLsit() {
+  const drill = (name, meta, note, doneKey, onclickFn) => {
+    const done = !!state.lsDone[doneKey];
+    return `<div onclick="${onclickFn}" style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+      <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid ${done ? 'var(--accent)' : 'var(--border)'};background:${done ? 'var(--accent-dim)' : 'var(--surface3)'};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px;color:var(--accent);">${done ? '✓' : ''}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">${name}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">${meta}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4;">${note}</div>
+      </div>
+    </div>`;
+  };
+
+  let html = `<div class="day-hero">
+    <div class="day-hero-title">L-Sit Progression</div>
+    <div class="day-hero-focus">Beginner → Advanced · Day 1 + Day 6 · 2×/week</div>
+  </div>`;
+
+  // How it works banner
+  html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;">
+    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">How To Progress</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;">Work Stage 1 until support holds feel solid (W1-2). Move to Stage 2 tuck holds — aim for 3 × 10s before advancing. One-leg L-sit bridges you to full L. <strong style="color:var(--text);">Log your hold time every set.</strong> That number going up is the whole game.</div>
+  </div>`;
+
+  // Stages
+  LSIT_DATA.stages.forEach((stage, si) => {
+    html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;">
+        <div style="background:var(--accent);color:#000;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;flex-shrink:0;">${stage.badge}</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;">${stage.title}</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Goal: ${stage.goal}</div>
+        </div>
+      </div>`;
+    stage.drills.forEach((d, di) => {
+      html += drill(d.name, d.target, d.note,
+        `ls_s${si}_d${di}`,
+        `toggleLsDrill(${si},${di})`);
+    });
+    html += `</div>`;
+  });
+
+  // Principles
+  html += `<div style="background:var(--accent-dim);border-radius:14px;padding:14px 16px;border-left:3px solid var(--accent);">
+    <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Key Principles</div>
+    ${LSIT_DATA.principles.map(p => `<div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:6px;">• ${p}</div>`).join('')}
+  </div>`;
+
+  document.getElementById('scrollArea').innerHTML = html;
+}
+
+function toggleLsDrill(si, di) {
+  const key = `ls_s${si}_d${di}`;
+  state.lsDone[key] = !state.lsDone[key];
+  saveState();
+  renderLsit();
+}
+
+function renderPullup() {
+  const drill = (name, meta, note, doneKey, onclickFn) => {
+    const done = !!state.puDone[doneKey];
+    return `<div onclick="${onclickFn}" style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+      <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid ${done ? 'var(--accent)' : 'var(--border)'};background:${done ? 'var(--accent-dim)' : 'var(--surface3)'};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px;color:var(--accent);">${done ? '✓' : ''}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">${name}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">${meta}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4;">${note}</div>
+      </div>
+    </div>`;
+  };
+
+  let html = `<div class="day-hero">
+    <div class="day-hero-title">Pull-Up Progression</div>
+    <div class="day-hero-focus">Chin-Up → Neutral-Grip → Overhand Pull-Up</div>
+  </div>`;
+
+  // Path banner
+  html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;">
+    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">The Path</div>
+    <div style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:8px;">${PULLUP_DATA.path}</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.6;">You train chin-ups on <strong style="color:var(--text);">Day 1 (main)</strong> + <strong style="color:var(--text);">Days 2, 4, 6 (5-min warm-up skill)</strong>. That's 4× per week of pull pattern — the right frequency to get your first rep in 4-8 weeks.</div>
+  </div>`;
+
+  // Milestones
+  html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;">
+    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">Milestone Checklist</div>
+    ${PULLUP_DATA.milestones.map((m, i) => {
+      const key = `pu_milestone_${i}`;
+      const done = !!state.puDone[key];
+      return `<div onclick="state.puDone['${key}']=!state.puDone['${key}'];saveState();renderPullup()" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div style="width:20px;height:20px;border-radius:5px;border:1.5px solid ${done ? 'var(--accent)' : 'var(--border)'};background:${done ? 'var(--accent-dim)' : 'transparent'};display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent);flex-shrink:0;">${done ? '✓' : ''}</div>
+        <div style="font-size:13px;color:${done ? 'var(--text3)' : 'var(--text)'};text-decoration:${done ? 'line-through' : 'none'};">${m}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // Stages
+  PULLUP_DATA.stages.forEach((stage, si) => {
+    html += `<div style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;">
+        <div style="background:var(--accent);color:#000;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;flex-shrink:0;">${stage.badge}</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;">${stage.title}</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Goal: ${stage.goal}</div>
+        </div>
+      </div>`;
+    stage.drills.forEach((d, di) => {
+      html += drill(d.name, d.target, d.note,
+        `pu_s${si}_d${di}`,
+        `togglePuDrill(${si},${di})`);
+    });
+    html += `</div>`;
+  });
+
+  // Principles
+  html += `<div style="background:var(--accent-dim);border-radius:14px;padding:14px 16px;border-left:3px solid var(--accent);">
+    <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Key Principles</div>
+    ${PULLUP_DATA.principles.map(p => `<div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:6px;">• ${p}</div>`).join('')}
+  </div>`;
+
+  document.getElementById('scrollArea').innerHTML = html;
+}
+
+function togglePuDrill(si, di) {
+  const key = `pu_s${si}_d${di}`;
+  state.puDone[key] = !state.puDone[key];
+  saveState();
+  renderPullup();
+}
+
+function renderMain() {
+  if (state.tab === 'workout') renderWorkout();
+  else if (state.tab === 'stretch') renderStretch();
+  else if (state.tab === 'handstand') renderHandstand();
+  else if (state.tab === 'lsit') renderLsit();
+  else if (state.tab === 'pullup') renderPullup();
+}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+window.onerror = function(msg, src, line, col, err) {
+  const el = document.getElementById('scrollArea');
+  if (el) el.innerHTML = `<div style="color:#f87171;padding:20px;font-size:13px;line-height:1.8;background:#1a1a1a;border-radius:12px;margin:12px;"><strong>JS Error:</strong><br>${msg}<br>Line ${line}:${col}<br>${err ? err.stack : ''}</div>`;
+};
+try {
+  loadState();
+  document.getElementById('unitToggle').textContent = state.unit;
+  renderTabs();
+  renderMain();
+} catch(e) {
+  const el = document.getElementById('scrollArea');
+  if (el) el.innerHTML = `<div style="color:#f87171;padding:20px;font-size:13px;line-height:1.8;background:#1a1a1a;border-radius:12px;margin:12px;"><strong>Init Error:</strong><br>${e.message}<br><br>${e.stack}</div>`;
+}
+</script>
+</body>
+</html>
