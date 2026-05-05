@@ -975,7 +975,7 @@ const DAY_CONFIGS = [
   { label: 'Glutes+H',  focus: 'Glutes + Hamstrings Strength',   restDefault: 120, chinUpSkill: false, warmupText: 'Lower body — hip circles, glute bridges, banded clamshells, hamstring + ankle mobility (8-10 min) + ramp-up sets' },
   { label: 'Chest+Tri', focus: 'Chest + Triceps',                restDefault: 90,  chinUpSkill: false, warmupText: 'Upper body — dynamic mobility (3 min) + push-up warm-up: wide push-ups 2×10 → close push-ups 2×8 → slow negative push-ups 2×6 (4s down). Primes chest, front delts + triceps before loading.' },
   { label: 'Shld+Bi',   focus: 'Shoulders + Biceps',             restDefault: 90,  chinUpSkill: true,  warmupText: 'Upper body — dynamic mobility (3 min) + rotator cuff + band pull-aparts (3-4 min) + ramp-up sets' },
-  { label: 'Glutes+Q',  focus: 'Glutes + Quads Hypertrophy',     restDefault: 90,  chinUpSkill: false, warmupText: 'Lower body — hip circles, quad + hip flexor stretches, glute activation, ankle mobility (8-10 min) + ramp-up sets' },
+  { label: 'Glutes',    focus: 'Glutes — Isolation + Volume',     restDefault: 90,  chinUpSkill: false, warmupText: 'Lower body — hip circles, glute bridges, banded clamshells, hip flexor + ankle mobility (8-10 min). Ramp-up sets for Sumo Squat. Today is glutes-first — quads are maintenance only (optional exercises).' },
   { label: 'Skills',    focus: 'Core + Agility + Handstand',     restDefault: 60,  chinUpSkill: false, warmupText: 'Agility warm-up (~12 min): Agility Ladder (3-4 passes, high knees + lateral shuffle) → 5-10-5 Cone Shuttle (4-5 sprints, time each) → Broad Jump (3-5 reps, full reset). Then dynamic mobility (2-3 min) before handstand.' },
 ];
 
@@ -990,15 +990,15 @@ const DAY_EXERCISES = [
     { name: 'Face Pulls (rope, high)', notes: 'External rotation at end. Rear delts + upper back. Pick this OR Lat Pulldown.', noWeight: false, primary: false },
     { name: 'L-Sit Progression (core + skill)', notes: 'Stage 1: Tuck L-sit on parallettes/floor OR hanging tuck. Stage 2: One-leg L-sit. Stage 3: Full L-sit. Hold each set to failure. Also on Day 6 — do both days for faster progression.', noWeight: true, isTime: true, primary: true },
   ],
-  // DAY 2 - Glutes + Hamstrings (4 main + calves = 5)
+  // DAY 2 - Glutes + Hamstrings
   [
-    { name: 'Barbell Hip Thrust', notes: 'Full lockout; 1-2s pause at top. Chin tucked.', noWeight: false, primary: true },
-    { name: 'Romanian Deadlift (barbell)', notes: 'Hinge only. Bar travels close to legs.', noWeight: false, primary: true },
-    { name: 'Bulgarian Split Squat (DB)', notes: 'Front foot forward; torso slight forward lean for glute bias.', noWeight: false, primary: true },
-    { name: 'Seated Leg Curl', notes: 'Point toes up; 2s negative.', noWeight: false, primary: true },
-    { name: 'Cable Hip Abduction (standing, per leg)', notes: 'Keep torso still; work the hip, not the lean.', noWeight: false, primary: false },
-    { name: '45° Back Extension (glute-biased, feet turned out)', notes: 'Round slightly through thoracic; squeeze glutes at top.', noWeight: false, primary: false },
+    { name: 'Barbell Hip Thrust', notes: 'Pyramid load — start at 50kg, add 10kg each set up to 90kg. 1-2s pause at top, chin tucked. Full lockout every rep. 4 sets × 10-15 reps.', noWeight: false, primary: true },
+    { name: 'Cable Crossover Kickback', notes: 'Crossover/lateral variation — cable attached at ankle, kick back at an outward angle (not straight back). Targets upper/outer glute max where it meets the medius. Hinge slightly at hip, squeeze hard at the top. 3 sets × 15 reps each leg.', noWeight: false, primary: true },
+    { name: 'Romanian Deadlift (back against bench)', notes: 'Stand with back lightly touching a bench behind you — this forces a true hip hinge and prevents knee bend. Bar travels close to legs. Hinge until deep hamstring stretch, drive hips forward to stand. Increases hamstring stretch and glute engagement vs free-standing RDL.', noWeight: false, primary: true },
+    { name: '45° Back Extension (glute-biased, feet turned out)', notes: 'Feet turned out 30-45° increases glute recruitment vs straight feet. Round slightly through thoracic; squeeze glutes hard at top. Hold 1s at top each rep.', noWeight: false, primary: true },
+    { name: 'Frog Pumps with Band', notes: 'Lie on back, place band above knees. Soles of feet together (butterfly position), knees fall out to sides. Drive hips up and squeeze glutes hard at top. High rep burnout — upper glute medius. Keep reps controlled, don\'t rush.', noWeight: true, primary: true },
     { name: 'Seated Calf Raise (soleus)', notes: '1s pause at top, 2s descent. Soleus responds best to higher reps + slow tempo.', noWeight: false, primary: true },
+    { name: 'Bulgarian Split Squat (DB)', notes: 'Optional. Front foot forward, torso slight forward lean for glute bias. Swap in when you want a unilateral compound on Day 2.', noWeight: false, primary: false },
   ],
   // DAY 3 - Chest + Triceps (3 chest + 2 tri)
   [
@@ -1020,16 +1020,17 @@ const DAY_EXERCISES = [
     { name: 'Incline DB Curl (long head stretch)', notes: 'Elbows back; full stretch at bottom. Pick this OR Hammer Curl.', noWeight: false, primary: true },
     { name: 'Hammer Curl (alternating or both)', notes: 'Brachialis + forearms. Slow negatives. Pick this OR Incline DB Curl.', noWeight: false, primary: false },
   ],
-  // DAY 5 - Glutes + Quads (4 main + calves = 5)
+  // DAY 5 - Glutes (Upper + Lower focus)
   [
-    { name: 'High-Bar Back Squat', notes: 'Full depth. Knees track over toes.', noWeight: false, primary: true },
-    { name: 'Reverse Lunges (DB)', notes: 'Step back into lunge — more controlled than walking lunges, easier to load heavy. Keep torso upright, front knee tracks over toes. Long step back = more glute bias.', noWeight: false, primary: true },
-    { name: 'Leg Press (feet high, hip-width)', notes: "Knees to chest; don't round lower back.", noWeight: false, primary: true },
-    { name: 'Hip Abduction Machine', notes: 'Lean forward 10-15° — this shifts load from outer thigh to glute medius (upper glute). Push knees out slowly, hold 1-2s at top, 2-3s return. Feel the burn on the side of the glute, not the thigh.', noWeight: false, primary: true },
-    { name: 'Cable Glute Kickback (single leg)', notes: 'Hinge slightly. Kick back + slightly outward.', noWeight: false, primary: false },
-    { name: 'Barbell Hip Thrust (paused, moderate load)', notes: '2s pause at top every rep. Lighter than Day 2 — focus on the squeeze and time under tension.', noWeight: false, primary: false },
-    { name: 'Leg Extension (quad finisher)', notes: '1s hold at top. Add if time allows.', noWeight: false, primary: false },
-    { name: 'Standing Calf Raise (leg press or Smith) — gastroc', notes: 'Full stretch at bottom, explosive up, 2s pause at top. Heavy. Gastroc responds to lower reps + load.', noWeight: false, primary: true },
+    { name: 'Barbell Hip Thrust OR Curtsy Lunge — choose on the day', notes: 'Hip Thrust: heavy pyramid load same as Day 2 style — choose when you have full energy. Curtsy Lunge: step one foot behind and across (like a curtsy), targets upper/outer glute medius — choose on lighter days or when hip thrust weight feels too demanding back-to-back with Day 2. Most weeks Curtsy Lunge will be the natural choice.', noWeight: false, primary: true },
+    { name: 'Heel-Elevated Sumo Squat', notes: 'Stand on weight plates or heel wedge (1-2 inch elevation). Wide stance, toes out 30-45°. The elevation lets you sink deeper than flat sumo — use that full range. Drive knees out throughout. Squeeze glutes hard at lockout. Barbell on back or goblet hold.', noWeight: false, primary: true },
+    { name: 'Barbell Glute Bridges with Band', notes: 'Band placed above knees — the band adds glute medius activation on top of the hip extension. Lie flat on floor (not bench), barbell across hips. Drive hips up, push knees out against band, squeeze hard at top for 1-2s. Lower under control.', noWeight: false, primary: true },
+    { name: 'Hip Abduction Machine — ascending pyramid', notes: 'Ascending pyramid: Set 1 × 20 reps (light) → Set 2 × 15 reps → Set 3 × 12 reps → Set 4 × 10 reps (heaviest). Increase weight each set. Lean forward 10-15° to shift load from outer thigh to glute medius. Push knees out slowly, hold 1-2s at top, 2-3s return.', noWeight: false, primary: true },
+    { name: 'Quadruped Hip Abductor with Plate', notes: 'On all fours, plate resting on back of thigh/knee. Lift leg out to the side (abduction) — not back, to the side. Targets glute medius from a different angle than the machine. Control the movement, don\'t swing. Squeeze at top of each rep.', noWeight: false, primary: true },
+    { name: 'SL Hip Thrust BW — burnout finisher', notes: 'Bodyweight only. One shoulder on bench, one leg extended. Drive through planted heel, squeeze glute max at top. High reps to burnout — go until form breaks. Final exercise of the day — leave everything here.', noWeight: true, primary: true },
+    { name: 'Seated Calf Raise (soleus)', notes: '1s pause at top, 2s descent. Soleus responds best to higher reps + slow tempo.', noWeight: false, primary: true },
+    { name: 'Leg Press — quad maintenance', notes: 'Optional. Feet high and hip-width. Light-moderate weight — maintenance only, not a growth exercise for quads. Do only if time and energy allow.', noWeight: false, primary: false },
+    { name: 'Leg Extension — quad maintenance', notes: 'Optional. 1s hold at top. Light weight — quad maintenance only. Skip if short on time.', noWeight: false, primary: false },
   ],
   // DAY 6 - Core + Handstand + Skill (do 5-6 from main block)
   [
@@ -1059,7 +1060,7 @@ const WEEK_DATA = [
       {
         warmupExtra: WARMUP_SKILL,
         exercises: [
-          ['5','4-6','8'], ['5','6-8','7-8'], ['3','8-10/leg','8'], ['3','10-12','8'], ['3','12-15/leg','7'], ['3','12','7'], ['3','12-15','7'],
+          ['4','10-15','8'], ['3','15','7'], ['3','8-10','8'], ['3','12-15','7'], ['3','20-25','7'], ['3','15-20','7'], ['3','10-12/leg','7'],
         ]
       },
       {
@@ -1077,7 +1078,7 @@ const WEEK_DATA = [
       {
         warmupExtra: null,
         exercises: [
-          ['5','6-8','8'], ['3','10/leg','8'], ['3','10-12','8'], ['3','15-20','7'], ['3','12-15/side','7'], ['3','10-12','7'], ['3','12-15','7'], ['3','8-12','8'],
+          ['4','10-12','8'], ['3','12-15','8'], ['3','12-15','8'], ['4','20/15/12/10','7-8'], ['3','12-15/side','7'], ['3','Max','7'], ['3','15-20','7'], ['3','10-12','7'], ['3','12-15','7'],
         ]
       },
       {
@@ -1101,7 +1102,7 @@ const WEEK_DATA = [
       {
         warmupExtra: WARMUP_SKILL,
         exercises: [
-          ['5','4-6','8'], ['5','6-8','8'], ['4','8-10/leg','8'], ['3','10-12','8'], ['3','12-15/leg','8'], ['3','12','8'], ['3','12-15','8'],
+          ['4','10-15','8'], ['4','15','8'], ['4','8-10','8'], ['4','12-15','8'], ['4','20-25','8'], ['3','15-20','8'], ['3','10-12/leg','8'],
         ]
       },
       {
@@ -1119,7 +1120,7 @@ const WEEK_DATA = [
       {
         warmupExtra: null,
         exercises: [
-          ['5','6-8','8'], ['4','10/leg','8'], ['4','10-12','8'], ['3','15-20','8'], ['3','12-15/side','8'], ['3','10-12','8'], ['3','12-15','8'], ['3','8-12','8'],
+          ['4','10-12','8'], ['4','12-15','8'], ['4','12-15','8'], ['4','20/15/12/10','8'], ['3','12-15/side','8'], ['3','Max','8'], ['3','15-20','8'], ['4','10-12','8'], ['3','12-15','8'],
         ]
       },
       {
@@ -1143,7 +1144,7 @@ const WEEK_DATA = [
       {
         warmupExtra: WARMUP_SKILL,
         exercises: [
-          ['5','3-5','9'], ['5','5-6','9'], ['3','6-8/leg','9'], ['3','8-10','9'], ['3','10-12/leg','8'], ['3','10','8'], ['3','10-12','8'],
+          ['4','8-10','9'], ['3','15','8'], ['4','6-8','9'], ['3','10-12','8'], ['3','25-30','8'], ['3','12-15','8'], ['3','8-10/leg','9'],
         ]
       },
       {
@@ -1161,7 +1162,7 @@ const WEEK_DATA = [
       {
         warmupExtra: null,
         exercises: [
-          ['5','5-6','9'], ['3','8/leg','9'], ['3','8-10','9'], ['3','12-15','8'], ['3','10-12/side','8'], ['3','8-10','8'], ['3','10-12','8'], ['3','6-8','9'],
+          ['4','8-10','9'], ['4','10-12','9'], ['4','10-12','9'], ['4','20/15/12/10','8-9'], ['3','10-12/side','8'], ['3','Max','8-9'], ['3','12-15','8'], ['3','8-10','9'], ['3','10-12','8'],
         ]
       },
       {
@@ -1185,7 +1186,7 @@ const WEEK_DATA = [
       {
         warmupExtra: WARMUP_SKILL,
         exercises: [
-          ['3','4-6','6'], ['3','6-8','6'], ['2','10-12/leg','6'], ['2','12-15','6'], ['2','15/leg','6'], ['2','15','6'], ['2','15','6'],
+          ['3','12-15','6'], ['2','15','6'], ['2','10-12','6'], ['2','15','6'], ['2','20','6'], ['2','15-20','6'], ['2','12/leg','6'],
         ]
       },
       {
@@ -1203,7 +1204,7 @@ const WEEK_DATA = [
       {
         warmupExtra: null,
         exercises: [
-          ['3','8-10','6'], ['2','12/leg','6'], ['2','12-15','6'], ['2','15-20','6'], ['2','15/side','6'], ['2','12-15','6'], ['2','15','6'], ['2','12','6'],
+          ['2','12-15','6'], ['2','15','6'], ['2','15','6'], ['3','20/15/12','6'], ['2','15/side','6'], ['2','Max','6'], ['2','15-20','6'], ['2','12-15','6'], ['2','15','6'],
         ]
       },
       {
